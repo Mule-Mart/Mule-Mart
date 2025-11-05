@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Login | Colby Now Merchandise</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../static/css/auth.css">
+  </head>
+
+  <body>
+    <section class="ftco-section">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-md-7 col-lg-5">
+            <div class="wrap">
+              <div class="img" style="background-image: url('../static/images/bg-1.jpg');"></div>
+              <div class="login-wrap p-4 p-md-5">
+                <div class="d-flex justify-content-center mb-4">
+                  <h3 class="fw-bold text-primary">Sign In</h3>
+                </div>
+                
+                <form action="/auth/login" method="POST" class="signin-form">
+                  <div class="form-group mt-3">
+                    <input type="text" class="form-control" id="username" name="username" required>
+                    <label class="form-control-placeholder" for="username">Username</label>
+                  </div>
+
+                  <div class="form-group">
+                    <input id="password-field" type="password" class="form-control" name="password" required>
+                    <label class="form-control-placeholder" for="password">Password</label>
+                    <span toggle="#password-field" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+                  </div>
+
+                  <div class="form-group">
+                    <button type="submit" class="form-control btn btn-primary rounded submit px-3">Sign In</button>
+                  </div>
+
+                  <div class="form-group d-md-flex align-items-center justify-content-between">
+                    <label class="checkbox-wrap checkbox-primary mb-0">Remember Me
+                      <input type="checkbox" checked>
+                      <span class="checkmark"></span>
+                    </label>
+                    <a href="#" class="text-warning">Forgot Password?</a>
+                  </div>
+                </form>
+
+                <p class="text-center mt-3">
+                  Not a member? <a href="/auth/signup" class="text-warning fw-bold">Sign Up</a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../static/js/auth.js"></script>
+  </body>
+</html>
