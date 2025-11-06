@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy an Item - ColbyNow Merchandise</title>
+    
+    <!-- Load Google Font 'Inter' -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Load Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    <!-- Load Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/src/frontend/static/css/add_buy_item.css">
+
+</head>
+<body class="bg-light">
+
+    <!-- Header / Navigation Bar -->
+    <header class="bg-white shadow-sm border-bottom">
+        <!-- Top support bar -->
+        <div class="bg-colby-blue text-white small py-1">
+            <div class="container text-end">
+                <a href="#" class="text-white text-decoration-none">Support</a>
+            </div>
+        </div>
+
+        <!-- Main Navigation -->
+        <nav class="navbar navbar-expand-sm navbar-light bg-white">
+            <div class="container">
+                 <img src="/src/frontend/static/images/Screenshot 2025-11-05 at 6.01.34 PM.png" alt="ColbyNow Logo" class="rounded-circle" style="height: 2.5rem; width: 2.5rem;">
+                <a class="navbar-brand" href="#">ColbyNow Merchandise</a>
+
+                <!-- Mobile Menu Button -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Navigation Links -->
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav mx-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="#">Buy</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Sell or Donate</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">My Listings</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Contact</a>
+                        </li>
+                    </ul>
+                    
+                    <!-- Search, Cart, Logout (Desktop) -->
+                    <div class="d-flex align-items-center">
+                        <!-- Search Bar -->
+                        <div class="input-group me-2">
+                            <span class="input-group-text bg-white" id="basic-addon1">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" class="form-control" placeholder="Search" aria-label="Search">
+                        </div>
+
+                        <!-- Cart Icon -->
+                        <a href="#" class="nav-link position-relative me-2">
+                            <i class="bi bi-cart fs-5"></i>
+                            <!-- Cart item count -->
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6em;">
+                                3
+                            </span>
+                        </a>
+
+                        <!-- Logout Link -->
+                        <a href="#" class="nav-link">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="container my-5">
+        <h1 class="display-5 fw-bold">Buy an Item</h1>
+        <p class="text-muted fs-5">Buy an item or sift through countless free items.</p>
+
+        <div class="row mt-4">
+            
+            <!-- Filters Sidebar -->
+            <aside class="col-lg-3 mb-4 mb-lg-0">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Filters</h5>
+                    <button class="btn btn-link btn-sm p-0 text-colby-blue text-decoration-none">Clear Filters</button>
+                </div>
+                
+                <!-- Categories Filter -->
+                <div class="mb-4">
+                    <h6 class="fw-medium mb-2">Categories</h6>
+                    <div class="form-check">
+                        <input class="form-check-input category-checkbox" type="checkbox" value="" id="cat-books">
+                        <label class="form-check-label" for="cat-books">Books</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input category-checkbox" type="checkbox" value="" id="cat-electronics">
+                        <label class="form-check-label" for="cat-electronics">Electronics</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input category-checkbox" type="checkbox" value="" id="cat-furniture">
+                        <label class="form-check-label" for="cat-furniture">Furniture</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input category-checkbox" type="checkbox" value="" id="cat-clothing">
+                        <label class="form-check-label" for="cat-clothing">Clothing</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input category-checkbox" type="checkbox" value="" id="cat-misc">
+                        <label class="form-check-label" for="cat-misc">Miscellaneous</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input category-checkbox" type="checkbox" value="" id="cat-cat">
+                        <label class="form-check-label" for="cat-cat">Cat-related</label>
+                    </div>
+                </div>
+
+                <!-- Seller Type Filter -->
+                <div class="mb-4">
+                    <h6 class="fw-medium mb-2">Seller type</h6>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="seller-student">
+                        <label class="form-check-label" for="seller-student">Student</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="seller-staff">
+                        <label class="form-check-label" for="seller-staff">Staff</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="seller-faculty">
+                        <label class="form-check-label" for="seller-faculty">Faculty</label>
+                    </div>
+                </div>
+
+                <!-- Conditions Filter -->
+                <div>
+                    <h6 class="fw-medium mb-2">Conditions</h6>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="cond-new">
+                        <label class="form-check-label" for="cond-new">Brand new</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="cond-like-new">
+                        <label class="form-check-label" for="cond-like-new">Like new</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="cond-fair">
+                        <label class="form-check-label" for="cond-fair">Fair</label>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Item Grid -->
+            <div class="col-lg-9">
+                <!-- Sort By Dropdown -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted small d-none" id="product-count-display">Showing 6 Products</span>
+                    <div class="d-flex align-items-center ms-auto">
+                        <label for="sort-by" class="form-label mb-0 me-2 small">Sort By</label>
+                        <select id="sort-by" name="sort-by" class="form-select form-select-sm" style="width: auto;">
+                            <option>Popular</option>
+                            <option>Newest</option>
+                            <option>Price: Low to High</option>
+                            <option>Price: High to Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Load More Button -->
+                <div class="mt-5 text-center d-none" id="load-more-container">
+                    <button type="button" class="btn btn-outline-secondary">
+                        Load more products
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-top mt-5">
+        <div class="container py-4">
+            <p class="text-center text-muted small">
+                COPYRIGHTS COLBY.EDU. ALL RIGHTS RESERVED
+            </p>
+        </div>
+    </footer>
+
+    <!-- Load Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>
