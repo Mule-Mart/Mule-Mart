@@ -1,0 +1,13 @@
+body {
+            background-color: #f4f5f7; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex-grow: 1; 
+        }
+        .details-grid strong {
+            display: block;
+            color: #6c757d; 
+}
