@@ -10,11 +10,11 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- Font Awesome for icons -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="../static/css/auth.css">
+    <!-- Auth Page CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
   </head>
 
   <body>
@@ -23,16 +23,31 @@
         <div class="row justify-content-center">
           <div class="col-md-7 col-lg-5">
             <div class="wrap">
-              <div class="img" style="background-image: url('../static/images/bg-1.jpg');"></div>
+              <div class="img"></div>
               <div class="login-wrap p-4 p-md-5">
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+
                 <div class="d-flex justify-content-center mb-4">
                   <h3 class="fw-bold text-primary">Sign In</h3>
                 </div>
-                
-                <form action="/auth/login" method="POST" class="signin-form">
+
+                <form action="{{ url_for('auth.login') }}" method="POST" class="signin-form">
                   <div class="form-group mt-3">
-                    <input type="text" class="form-control" id="username" name="username" required>
-                    <label class="form-control-placeholder" for="username">Username</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                    <label class="form-control-placeholder" for="email">Email Address</label>
                   </div>
 
                   <div class="form-group">
@@ -46,16 +61,17 @@
                   </div>
 
                   <div class="form-group d-md-flex align-items-center justify-content-between">
-                    <label class="checkbox-wrap checkbox-primary mb-0">Remember Me
-                      <input type="checkbox" checked>
+                    <label class="checkbox-wrap checkbox-primary mb-0">
+                      <input type="checkbox" name="remember" id="remember">
                       <span class="checkmark"></span>
+                      Remember Me
                     </label>
-                    <a href="#" class="text-warning">Forgot Password?</a>
-                  </div>
+                    <a href="{{ url_for('auth.forgot_password') }}" class="text-warning">Forgot Password?</a>
+                  </div>                  
                 </form>
 
                 <p class="text-center mt-3">
-                  Not a member? <a href="/auth/signup" class="text-warning fw-bold">Sign Up</a>
+                  Not a member? <a href="{{ url_for('auth.signup') }}" class="text-warning fw-bold">Sign Up</a>
                 </p>
               </div>
             </div>
@@ -67,6 +83,6 @@
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../static/js/auth.js"></script>
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
   </body>
 </html>
