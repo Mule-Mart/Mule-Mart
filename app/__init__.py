@@ -1,9 +1,9 @@
 from flask import Flask
 from flask_login import LoginManager
 from flask_mail import Mail
-from models import db, User
-from auth import auth
-from main import main
+from .models import db, User
+from .auth import auth
+from .main import main
 import os
 
 
@@ -14,8 +14,8 @@ mail = Mail()
 def create_app():
     app = Flask(
         __name__,
-        template_folder=os.path.join(os.path.dirname(__file__), '../frontend/templates'),
-        static_folder=os.path.join(os.path.dirname(__file__), '../frontend/static')
+        template_folder="templates",
+        static_folder="static"
     )
 
     # Basic app configuration

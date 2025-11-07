@@ -1,11 +1,20 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    current_app,
+)
 from flask_mail import Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required
-from models import User, db
+from .models import User, db
 
-#blueprint for authenticaiton routes
+# blueprint for authenticaiton routes
 auth = Blueprint("auth", __name__)
+
 
 # ---------- SIGNUP ----------
 @auth.route("/signup", methods=["GET", "POST"])
@@ -88,7 +97,7 @@ def forgot_password():
             subject="Password Reset Request - Colby Now Merchandise",
             sender=current_app.config["MAIL_USERNAME"],
             recipients=[email],
-            body=f"Hi {user.name},\n\nTo reset your password, please visit the password reset page.\n\nIf you did not request this, please ignore this email."
+            body=f"Hi {user.name},\n\nTo reset your password, please visit the password reset page.\n\nIf you did not request this, please ignore this email.",
         )
 
         # Send email using current_app’s mail instance
@@ -98,8 +107,6 @@ def forgot_password():
         return redirect(url_for("auth.login"))
 
     return render_template("forgot_password.html")
-
-
 
 
 @auth.route("/reset-password/<token>", methods=["GET", "POST"])
@@ -131,4 +138,3 @@ def reset_password(token):
         return redirect(url_for("auth.login"))
 
     return render_template("reset_password.html")
-

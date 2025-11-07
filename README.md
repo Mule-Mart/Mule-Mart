@@ -1,6 +1,7 @@
 # Colby-Now-Merchandise
+<center> <img src="app/static/images/colbynow_merch_logo.png" width=300px></center>
 A full-stack web application that serves as an online marketplace for the Colby College community where students, staff, and faculty can buy, sell, and donate items.
- - This project uses a **Flask** backend to handle user authentication, product listings, and other business logic, with a standard **HTML**, **CSS**, and **JavaScript** frontend.
+ - This project uses a **Flask** backend to handle user authentication, product listings, and other business logic, with a standard **HTML**, **CSS**, and **JavaScript** frontend.  
 
 ## Directory Structure
 
@@ -10,27 +11,34 @@ Colby-Now-Merchandise/
 ├── .env              # Environment variables (needs to be created)
 ├── .env.example      # Example environment variables
 ├── requirements.txt  # Project dependencies
-├── users.db          # SQLite database (auto-generated on run)
-└── src/
-    ├── backend/
-    │   ├── app.py        # Main Flask application factory
-    │   ├── auth.py       # Authentication routes (signup, login, etc.)
-    │   ├── main.py       # Core application routes (homepage, etc.)
-    │   └── models.py     # SQLAlchemy database models
-    └── frontend/
-        ├── static/
-        │   ├── css/
-        │   │   └── style.css
-        │   └── images/
-        │       └── Screenshot 2025-11-05 at 6.01.34 PM.png
-        └── templates/
-            ├── add_item_detail_page.html
-            ├── add_product_form.html
-            ├── forgot_password.html
-            ├── home.html
-            ├── login.html
-            ├── reset_password.html
-            └── signup.html
+├── run.py            # Application entry point
+├── instance/
+│   └── users.db      # SQLite database (auto-generated on run)
+└── app/
+    ├── __init__.py   # Main Flask application factory
+    ├── auth.py       # Authentication routes (signup, login, etc.)
+    ├── main.py       # Core application routes (homepage, etc.)
+    ├── models.py     # SQLAlchemy database models
+    ├── static/
+    │   ├── css/
+    │   │   ├── add_buy_item.css
+    │   │   ├── auth.css
+    │   │   └── style.css
+    │   ├── images/
+    │   │   ├── bg-1.jpg
+    │   │   ├── colby_logo.jpg
+    │   │   ├── colbynow_logo.png
+    │   │   └── miller_library.jpg
+    │   └── js/
+    │       └── auth.js
+    └── templates/
+        ├── buy_item.html
+        ├── forgot_password.html
+        ├── home.html
+        ├── item_details.html
+        ├── login.html
+        ├── post_new_item.html
+        └── signup.html
 ```
 
 ## Getting Started
@@ -51,8 +59,8 @@ First, clone the repository and navigate into the project directory.
 cd /path/to/Colby-Now-Merchandise
 
 # Create and activate a Python virtual environment
-python3 -m venv .venv
-source .venv/bin/activate  # On macOS/Linux
+python3 -m venv venv
+source venv/bin/activate  # On macOS/Linux
 # .venv\Scripts\activate  # On Windows
 ```
 
@@ -84,11 +92,11 @@ MAIL_PASSWORD="your-gmail-app-password"
 With the virtual environment active and dependencies installed, run the main application file:
 
 ```bash
-python src/backend/app.py
+python run.py
 ```
 
 The application will start in debug mode and be accessible at:
 
 **http://127.0.0.1:5000**
 
-When you first run the app, a `users.db` SQLite database file will be created in the project root.
+When you first run the app, a `users.db` SQLite database file will be created in the `instance/` directory.
