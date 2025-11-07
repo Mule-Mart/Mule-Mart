@@ -98,7 +98,7 @@
         <a href="{{ url_for('buy.html') }}" class="btn btn-dark mb-10 border-0 rounded-3">Shop All</a>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {% for item in items %}
+            {% for item in category_items %}
             <div class="category-item bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition">
                 <img src="{{ url_for('static', filename=item.image_url) }}" alt="{{ item.title }}"
                     class="mx-auto w-40 h-40 object-contain mb-4">
