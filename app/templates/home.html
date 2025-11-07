@@ -76,6 +76,20 @@
         </div>
     </nav>
 
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="container-xl mt-3">
+        <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show"
+            role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
 
     <section class="hero">
         <div class="hero-image">
@@ -86,7 +100,7 @@
                     <h1 class="text-4xl font-bold text-white text-center mb-4">Hi {{ user.name }} !</h1>
                     <h2 class="text-2xl font-bold text-white text-center mb-4">Welcome to Colby Now Merchandise</h2>
                     <p class="mb-6 text-white text-center text-1xl border rounded-3"> A dedicated platform to buy, sell
-                        and donate items within Colby community
+                        and donate items within the Colby community
                     </p>
                 </div>
             </div>
@@ -167,7 +181,7 @@
                         <a href="#" class="text-secondary text-decoration-none fw-medium">About</a>
                         <a href="{{ url_for('main.buy_item') }}"
                             class="text-secondary text-decoration-none fw-medium">Browse Items</a>
-                        <a href="{{ url_for('main.post_item') }}" class="text-secondary text-decoration-none fw-medium">Post an Item</a>
+                        <a href="" class="text-secondary text-decoration-none fw-medium">Post an Item</a>
                         <a href="#" class="text-secondary text-decoration-none fw-medium">FAQs</a>
                         <a href="#" class="text-secondary text-decoration-none fw-medium">Contact Us</a>
                     </nav>

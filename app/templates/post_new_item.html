@@ -47,15 +47,18 @@
 
                 <div class="d-none d-md-flex align-items-center gap-4">
                     <a href="{{ url_for('main.home') }}" class="text-secondary text-decoration-none fw-medium">Home</a>
-                    <a href="{{ url_for('main.buy_item') }}" class="text-secondary text-decoration-none fw-medium">Buy</a>
-                    <a href="{{ url_for('main.post_item')}}" class="text-dark text-decoration-none fw-medium">Sell or Donate</a>
+                    <a href="{{ url_for('main.buy_item') }}"
+                        class="text-secondary text-decoration-none fw-medium">Buy</a>
+                    <a href="{{ url_for('main.post_item')}}" class="text-dark text-decoration-none fw-medium">Sell or
+                        Donate</a>
                     <a href="#" class="text-secondary text-decoration-none fw-medium">My Listings</a>
                     <a href="#" class="text-secondary text-decoration-none fw-medium">About</a>
                     <a href="#" class="text-secondary text-decoration-none fw-medium">Contact</a>
                 </div>
 
                 <div class="d-flex align-items-center gap-4">
-                    <a href="{{ url_for('main.buy_item') }}" class="text-secondary text-decoration-none d-flex align-items-center gap-1">
+                    <a href="{{ url_for('main.buy_item') }}"
+                        class="text-secondary text-decoration-none d-flex align-items-center gap-1">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg" style="width: 1.25rem; height: 1.25rem;">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -72,7 +75,8 @@
                         </svg>
                         <span class="text-sm fw-bold">3</span>
                     </a>
-                    <a href="{{ url_for('auth.logout') }}" class="text-secondary text-decoration-none text-sm fw-medium">Logout</a>
+                    <a href="{{ url_for('auth.logout') }}"
+                        class="text-secondary text-decoration-none text-sm fw-medium">Logout</a>
                 </div>
             </div>
         </div>
@@ -80,6 +84,19 @@
 
     <main class="container-lg my-5">
         <h1 class="display-5 fw-bold text-dark mb-4">Post a New Listing</h1>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show"
+            role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
 
         <form action="{{ url_for('main.post_item') }}" method="POST" enctype="multipart/form-data"
             class="bg-white p-4 p-md-5 rounded-3 shadow-sm">
@@ -94,9 +111,9 @@
                         </div>
 
                         <div>
-                            <label for="description"  class="form-label fw-semibold">Description</label>
-                            <textarea id="description" name="description" required rows="4" placeholder="Add a description"
-                                class="form-control bg-light"></textarea>
+                            <label for="description" class="form-label fw-semibold">Description</label>
+                            <textarea id="description" name="description" required rows="4"
+                                placeholder="Add a description" class="form-control bg-light"></textarea>
                         </div>
 
                         <div>
@@ -192,10 +209,13 @@
 
                 <div class="col-md-6 col-lg-auto">
                     <nav class="d-flex flex-wrap justify-content-center justify-content-md-end gap-3 gap-lg-4">
-                        <a href="{{ url_for('main.home') }}" class="text-secondary text-decoration-none fw-medium">Home</a>
+                        <a href="{{ url_for('main.home') }}"
+                            class="text-secondary text-decoration-none fw-medium">Home</a>
                         <a href="#" class="text-secondary text-decoration-none fw-medium">About</a>
-                        <a href="{{ url_for('main.buy_item') }}" class="text-secondary text-decoration-none fw-medium">Browse Items</a>
-                        <a href="{{ url_for('main.post_item') }}" class="text-secondary text-decoration-none fw-medium">Post an Item</a>
+                        <a href="{{ url_for('main.buy_item') }}"
+                            class="text-secondary text-decoration-none fw-medium">Browse Items</a>
+                        <a href="{{ url_for('main.post_item') }}"
+                            class="text-secondary text-decoration-none fw-medium">Post an Item</a>
                         <a href="#" class="text-secondary text-decoration-none fw-medium">FAQs</a>
                         <a href="#" class="text-secondary text-decoration-none fw-medium">Contact Us</a>
                     </nav>
@@ -218,6 +238,20 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
+
+    <script>
+        // Update file name display when a file is selected
+        const fileInput = document.getElementById('file-upload');
+        const fileChosen = document.getElementById('file-chosen');
+
+        fileInput.addEventListener('change', function () {
+            if (this.files && this.files.length > 0) {
+                fileChosen.textContent = this.files[0].name;
+            } else {
+                fileChosen.textContent = 'None selected';
+            }
+        });
+    </script>
 </body>
 
 </html>
