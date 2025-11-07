@@ -1,6 +1,17 @@
-from flask import Blueprint, render_template, request
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    current_app,
+)
 from flask_login import login_required, current_user
+from werkzeug.utils import secure_filename
 from .models import Item, db
+import os
+from datetime import datetime
 
 # Create a new blueprint for main pages
 main = Blueprint("main", __name__)
@@ -100,3 +111,104 @@ def buy_item():
         current_sort=sort_by,
         item_count=len(items),
     )
+
+
+@main.route("/post-item", methods=["GET", "POST"])
+@login_required
+def post_item():
+    """
+    Allows authenticated users to post a new item for sale.
+    """
+    if request.method == "POST":
+        try:
+            # Get form data
+            title = request.form.get("title", "").strip()
+            description = request.form.get("description", "").strip()
+            category = request.form.get("category", "").strip()
+            size = request.form.get("size", "").strip()
+            seller_type = request.form.get("seller_type", "").strip()
+            condition = request.form.get("condition", "").strip()
+            price_str = request.form.get("price", "").strip()
+
+            # Handle file upload
+            image_url = None
+            if "image" in request.files:
+                file = request.files["image"]
+                if file and file.filename:
+                    # Validate file type
+                    allowed_extensions = {"png", "jpg", "jpeg", "gif", "webp"}
+                    filename = secure_filename(file.filename)
+
+                    # Check if file extension is allowed
+                    if (
+                        "." in filename
+                        and filename.rsplit(".", 1)[1].lower() in allowed_extensions
+                    ):
+                        # Create unique filename to avoid conflicts
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        filename = f"{timestamp}_{filename}"
+
+                        # Create uploads directory if it doesn't exist
+                        upload_folder = os.path.join(
+                            current_app.static_folder, "uploads"
+                        )
+                        os.makedirs(upload_folder, exist_ok=True)
+
+                        # Save file
+                        filepath = os.path.join(upload_folder, filename)
+                        file.save(filepath)
+
+                        # Store relative path for database
+                        image_url = f"uploads/{filename}"
+                    else:
+                        flash(
+                            "Invalid file type. Please upload an image (PNG, JPG, JPEG, GIF, WEBP).",
+                            "danger",
+                        )
+                        return redirect(url_for("main.post_item"))
+
+            # Basic validation
+            if not title:
+                flash("Item name is required.", "danger")
+                return redirect(url_for("main.post_item"))
+
+            if not price_str:
+                flash("Price is required.", "danger")
+                return redirect(url_for("main.post_item"))
+
+            # Validate and convert price
+            try:
+                price_clean = price_str.replace("$", "").replace(",", "").strip()
+                price = float(price_clean)
+                if price < 0:
+                    raise ValueError("Price must be positive")
+            except ValueError:
+                flash("Invalid price. Please enter a valid number.", "danger")
+                return redirect(url_for("main.post_item"))
+
+            # Create new item
+            new_item = Item(
+                title=title,
+                description=description if description else None,
+                category=category if category else None,
+                size=size if size else None,
+                seller_type=seller_type if seller_type else None,
+                condition=condition if condition else None,
+                price=price,
+                image_url=image_url,
+                seller_id=current_user.id,
+            )
+
+            db.session.add(new_item)
+            db.session.commit()
+
+            flash("Item posted successfully!", "success")
+            return redirect(url_for("main.buy_item"))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error posting item: {str(e)}", "danger")
+            return redirect(url_for("main.post_item"))
+
+    # GET request - show the form
+    return render_template("post_new_item.html")
