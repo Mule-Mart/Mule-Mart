@@ -88,14 +88,14 @@
                 <div class="col-md-6">
                     <div class="d-flex flex-column gap-4">
                         <div>
-                            <label for="item-name" name="title" required class="form-label fw-semibold">Item name</label>
-                            <input type="text" id="item-name" placeholder="Item Name"
+                            <label for="item-name" class="form-label fw-semibold">Item name</label>
+                            <input type="text" name="title" required id="item-name" placeholder="Item Name"
                                 class="form-control form-control-lg bg-light">
                         </div>
 
                         <div>
-                            <label for="description" name="description" class="form-label fw-semibold">Description</label>
-                            <textarea id="description" rows="4" placeholder="Add a description"
+                            <label for="description"  class="form-label fw-semibold">Description</label>
+                            <textarea id="description" name="description" required rows="4" placeholder="Add a description"
                                 class="form-control bg-light"></textarea>
                         </div>
 
@@ -134,7 +134,7 @@
                     <div class="d-flex flex-column gap-4">
                         <div>
                             <label for="size" class="form-label fw-semibold">Size</label>
-                            <select id="size" name=size required class="form-select form-select-lg">
+                            <select id="size" name="size" required class="form-select form-select-lg">
                                 <option>Large</option>
                                 <option>Medium</option>
                                 <option>Small</option>
