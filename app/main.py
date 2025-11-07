@@ -11,4 +11,4 @@ def home():
     Displays the homepage after a successful login or signup.
     Requires user to be authenticated.
     """
-    return render_template('home.html', user=current_user)
+    return render_template('home.html', user=current_user, items=[], recent_items=[])
