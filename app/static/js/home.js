@@ -21,3 +21,29 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 });
+
+document.querySelector("form").addEventListener("submit", function (e) {
+  const price = document.getElementById("price_offer").value;
+  if (price <= 0) {
+      alert("Please enter a valid price.");
+      e.preventDefault();
+  }
+});
+
+
+function confirmDelivery(orderId) {
+  fetch(`/confirm_order/${orderId}`, {
+      method: "POST",
+      headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token() }}"
+      }
+  })
+  .then(response => {
+      if(response.ok) {
+          location.reload();
+      }
+  })
+  .catch(err => console.error(err));
+}
+

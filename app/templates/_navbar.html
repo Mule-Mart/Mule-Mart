@@ -31,7 +31,10 @@
           My Listings
         </a>
 
-        <a href="#" class="text-secondary text-decoration-none fw-medium">About</a>
+        <a href="{{ url_for('main.my_orders') }}"
+          class="text-decoration-none fw-medium {% if request.endpoint == 'main.my_orders' %}text-primary fw-bold{% else %}text-secondary{% endif %}">
+          My Orders
+        </a>
         <a href="{{ url_for('main.contact_us') }}"
           class="text-decoration-none fw-medium {% if request.endpoint == 'main.contact_us' %}text-primary fw-bold{% else %}text-secondary{% endif %}">
           Contact Us
