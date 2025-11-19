@@ -28,6 +28,6 @@ def is_strong_password(password: str) -> bool:
     upper = re.search(r"[A-Z]", password)
     lower = re.search(r"[a-z]", password)
     number = re.search(r"[0-9]", password)
-    special = re.search(r"[!@#$%^&*(),.?\":{}|<>]", password)
+    special = re.search(r"[!@#$%^&*(),.?\":{}|<>_\-]", password)
 
     return all([upper, lower, number, special])

@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
         updateRule(ruleUpper, /[A-Z]/.test(p));
         updateRule(ruleLower, /[a-z]/.test(p));
         updateRule(ruleNumber, /[0-9]/.test(p));
-        updateRule(ruleSpecial, /[!@#$%^&*(),.?":{}|<>]/.test(p));
+        updateRule(ruleSpecial, /[!@#$%^&*(),.?":{}|<>_\-]/.test(p));
     });
 
     function updateRule(element, condition) {
