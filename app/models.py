@@ -13,6 +13,7 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(200), nullable=False)
     name = db.Column(db.String(150), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_verified = db.Column(db.Boolean, default=False)
 
     items = db.relationship("Item", backref="seller", lazy=True)
 
