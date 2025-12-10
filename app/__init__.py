@@ -7,8 +7,9 @@ from .auth import auth
 from .main import main
 import os
 from werkzeug.exceptions import RequestEntityTooLarge
-from flask_migrate import Migrate 
+from flask_migrate import Migrate
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
@@ -16,7 +17,7 @@ load_dotenv()
 mail = Mail()
 
 # Initialize Flask-Migrate
-migrate = Migrate() 
+migrate = Migrate()
 
 
 def create_app():
@@ -25,7 +26,6 @@ def create_app():
 
     # Basic app configuration
     app.secret_key = os.getenv("SECRET_KEY", "dev_secret_key")
-    
 
     # Get database URL
     database_url = os.getenv("DATABASE_URL", "sqlite:///users.db")
@@ -45,13 +45,12 @@ def create_app():
     app.config["MAIL_SERVER"] = "smtp.gmail.com"
     app.config["MAIL_PORT"] = 587
     app.config["MAIL_USE_TLS"] = True
-    app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")  
-    app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")  
-    
+    app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
+    app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
+
     # Stripe Configuration
     app.config["STRIPE_SECRET_KEY"] = os.getenv("STRIPE_SECRET_KEY")
     app.config["STRIPE_PUBLIC_KEY"] = os.getenv("STRIPE_PUBLIC_KEY")
-
 
     # Initialize database and mail, migrate
     db.init_app(app)
@@ -62,6 +61,7 @@ def create_app():
     # Login manager setup
     login_manager = LoginManager()
     login_manager.login_view = "auth.login"
+    login_manager.login_message_category = "info"
     login_manager.init_app(app)
 
     @login_manager.user_loader
@@ -71,7 +71,7 @@ def create_app():
     # Register blueprints
     app.register_blueprint(auth, url_prefix="/auth")
     app.register_blueprint(main)
-    
+
     # OAuth setup for Google Login
     google_bp = make_google_blueprint(
         client_id=os.getenv("GOOGLE_CLIENT_ID"),
@@ -81,10 +81,9 @@ def create_app():
             "https://www.googleapis.com/auth/userinfo.profile",
             "https://www.googleapis.com/auth/userinfo.email",
         ],
-        redirect_url="/auth/google"
+        redirect_url="/auth/google",
     )
     app.register_blueprint(google_bp, url_prefix="/login")
-
 
     # Error handler for file size limit
     @app.errorhandler(RequestEntityTooLarge)
