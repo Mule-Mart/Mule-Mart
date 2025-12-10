@@ -28,107 +28,90 @@
     </p>
   </section>
 
-  <!-- ===== FLASH MESSAGES ===== -->
-  <div class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm mt-3" role="alert">
-      {{ message }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
-  </div>
+
 
   <!-- ===== INCOMING REQUESTS (Grouped by Status) ===== -->
   <main class="container py-4">
 
-      <!-- PAID ORDERS — MOST IMPORTANT -->
-      {% if paid_orders %}
-      <div class="mb-5">
-          <h3 class="fw-bold mb-3 text-primary">Paid Orders — Awaiting Pickup</h3>
+    <!-- PAID ORDERS — MOST IMPORTANT -->
+    {% if paid_orders %}
+    <div class="mb-5">
+      <h3 class="fw-bold mb-3 text-primary">Paid Orders — Awaiting Pickup</h3>
 
-          <div class="row g-3">
-              {% for order in paid_orders %}
-                  {% include "_order_card.html" %}
-              {% endfor %}
-          </div>
+      <div class="row g-3">
+        {% for order in paid_orders %}
+        {% include "_order_card.html" %}
+        {% endfor %}
       </div>
-      <hr class="my-5">
-      {% endif %}
+    </div>
+    <hr class="my-5">
+    {% endif %}
 
-      <!-- PENDING ORDERS -->
-      {% if pending_orders %}
-      <div class="mb-5">
-          <h3 class="fw-bold mb-3">Pending Requests (Awaiting Approval)</h3>
+    <!-- PENDING ORDERS -->
+    {% if pending_orders %}
+    <div class="mb-5">
+      <h3 class="fw-bold mb-3">Pending Requests (Awaiting Approval)</h3>
 
-          <div class="row g-3">
-              {% for order in pending_orders %}
-                  {% include "_order_card.html" %}
-              {% endfor %}
-          </div>
+      <div class="row g-3">
+        {% for order in pending_orders %}
+        {% include "_order_card.html" %}
+        {% endfor %}
       </div>
-      <hr class="my-5">
-      {% endif %}
+    </div>
+    <hr class="my-5">
+    {% endif %}
 
-      <!-- APPROVED ORDERS -->
-      {% if approved_orders %}
-      <div class="mb-5">
-          <h3 class="fw-bold mb-3 text-success">Approved Orders</h3>
+    <!-- APPROVED ORDERS -->
+    {% if approved_orders %}
+    <div class="mb-5">
+      <h3 class="fw-bold mb-3 text-success">Approved Orders</h3>
 
-          <div class="row g-3">
-              {% for order in approved_orders %}
-                  {% include "_order_card.html" %}
-              {% endfor %}
-          </div>
+      <div class="row g-3">
+        {% for order in approved_orders %}
+        {% include "_order_card.html" %}
+        {% endfor %}
       </div>
-      <hr class="my-5">
-      {% endif %}
+    </div>
+    <hr class="my-5">
+    {% endif %}
 
-      <!-- COMPLETED ORDERS -->
-      {% if completed_orders %}
-      <div class="mb-5">
-          <h3 class="fw-bold mb-3 text-muted">Completed Orders</h3>
+    <!-- COMPLETED ORDERS -->
+    {% if completed_orders %}
+    <div class="mb-5">
+      <h3 class="fw-bold mb-3 text-muted">Completed Orders</h3>
 
-          <div class="row g-3">
-              {% for order in completed_orders %}
-                  {% include "_order_card.html" %}
-              {% endfor %}
-          </div>
+      <div class="row g-3">
+        {% for order in completed_orders %}
+        {% include "_order_card.html" %}
+        {% endfor %}
       </div>
-      <hr class="my-5">
-      {% endif %}
+    </div>
+    <hr class="my-5">
+    {% endif %}
 
 
     <!-- ===== MAIN LISTINGS ===== -->
     <div id="items-section" class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
 
-        <h3 class="fw-bold mb-0">Your Items</h3>
+      <h3 class="fw-bold mb-0">Your Items</h3>
 
-        <form method="GET"
-              action="{{ url_for('main.my_listings') }}#items-section"
-              class="d-flex align-items-center gap-2 mt-3 mt-md-0">
+      <form method="GET" action="{{ url_for('main.my_listings') }}#items-section"
+        class="d-flex align-items-center gap-2 mt-3 mt-md-0">
 
-            <div class="position-relative" style="width: 300px;">
-                <i class="bi bi-search position-absolute"
-                  style="left: 12px; top: 50%; transform: translateY(-50%); color: #555;"></i>
+        <div class="position-relative" style="width: 300px;">
+          <i class="bi bi-search position-absolute"
+            style="left: 12px; top: 50%; transform: translateY(-50%); color: #555;"></i>
 
-                <input 
-                    type="text"
-                    name="search"
-                    class="form-control ps-5"
-                    placeholder="Search your listings..."
-                    value="{{ current_search or '' }}"
-                    oninput="if(this.value === '') window.location='{{ url_for('main.my_listings') }}#items-section';">
-            </div>
+          <input type="text" name="search" class="form-control ps-5" placeholder="Search your listings..."
+            value="{{ current_search or '' }}"
+            oninput="if(this.value === '') window.location='{{ url_for('main.my_listings') }}#items-section';">
+        </div>
 
-            <button type="submit" class="btn btn-dark px-4 rounded-pill fw-semibold">
-                Search
-            </button>
+        <button type="submit" class="btn btn-dark px-4 rounded-pill fw-semibold">
+          Search
+        </button>
 
-        </form>
+      </form>
 
     </div>
 

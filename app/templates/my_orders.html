@@ -35,17 +35,13 @@
                     <p class="text-muted mb-0 mt-1">Track the status of your purchases and pickups.</p>
                 </div>
 
-                <form method="GET"
-                    action="{{ url_for('main.my_orders') }}"
+                <form method="GET" action="{{ url_for('main.my_orders') }}"
                     class="orders-search d-flex align-items-center gap-2 mt-3 mt-md-0">
 
                     <div class="search-wrapper d-flex align-items-center">
                         <i class="bi bi-search search-icon"></i>
-                        <input type="text"
-                            name="search"
-                            class="search-input form-control"
-                            placeholder="Search all orders"
-                            value="{{ request.args.get('search', '') }}"
+                        <input type="text" name="search" class="search-input form-control"
+                            placeholder="Search all orders" value="{{ request.args.get('search', '') }}"
                             oninput="if(this.value === '') window.location='{{ url_for('main.my_orders') }}';">
                     </div>
 
@@ -59,142 +55,127 @@
 
         </div>
 
-        <!-- Flash Messages -->
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm border-0" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+
+        <!-- PAID & AWAITING PICKUP (Stripe Paid Orders) -->
+        <div class="mb-5">
+            <h5 class="fw-bold text-uppercase text-muted mb-3 border-bottom pb-2">
+                Paid — Awaiting Pickup
+            </h5>
+
+            {% if paid_pending_pickup_orders %}
+            {% for order in paid_pending_pickup_orders %}
+            <div class="card shadow-sm border-0 mb-3 order-card border-start border-primary border-4">
+                <div class="card-body p-4 d-flex flex-column flex-md-row gap-4 align-items-center">
+
+                    <!-- Image -->
+                    <div class="flex-shrink-0">
+                        <img src="{{ url_for('static', filename=order.item.image_url) }}" alt="{{ order.item.title }}"
+                            class="rounded order-img shadow-sm">
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-grow-1 w-100">
+
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="fw-bold mb-0 text-primary">{{ order.item.title }}</h5>
+
+                            <span class="badge bg-primary status-badge px-3 py-2 rounded-pill">
+                                <i class="bi bi-cash me-1"></i> Paid
+                            </span>
+                        </div>
+
+                        <p class="mb-1 text-muted small">
+                            Pickup Location: <strong>{{ order.location }}</strong>
+                        </p>
+
+                        {% if order.pickup_time %}
+                        <p class="mb-1 text-muted small">
+                            Pickup Time: <strong>{{ order.pickup_time }}</strong>
+                        </p>
+                        {% endif %}
+
+                        {% if order.notes %}
+                        <p class="mb-1 text-muted small fst-italic">"{{ order.notes }}"</p>
+                        {% endif %}
+                    </div>
+
                 </div>
-                {% endfor %}
-                {% endif %}
-                {% endwith %}
             </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted small fst-italic">No orders waiting for pickup.</p>
+            {% endif %}
         </div>
 
-                 <!-- PAID & AWAITING PICKUP (Stripe Paid Orders) -->
-                <div class="mb-5">
-                    <h5 class="fw-bold text-uppercase text-muted mb-3 border-bottom pb-2">
-                        Paid — Awaiting Pickup
-                    </h5>
 
-                    {% if paid_pending_pickup_orders %}
-                        {% for order in paid_pending_pickup_orders %}
-                        <div class="card shadow-sm border-0 mb-3 order-card border-start border-primary border-4">
-                            <div class="card-body p-4 d-flex flex-column flex-md-row gap-4 align-items-center">
-
-                                <!-- Image -->
-                                <div class="flex-shrink-0">
-                                    <img src="{{ url_for('static', filename=order.item.image_url) }}"
-                                        alt="{{ order.item.title }}"
-                                        class="rounded order-img shadow-sm">
-                                </div>
-
-                                <!-- Content -->
-                                <div class="flex-grow-1 w-100">
-
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <h5 class="fw-bold mb-0 text-primary">{{ order.item.title }}</h5>
-
-                                        <span class="badge bg-primary status-badge px-3 py-2 rounded-pill">
-                                            <i class="bi bi-cash me-1"></i> Paid
-                                        </span>
-                                    </div>
-
-                                    <p class="mb-1 text-muted small">
-                                        Pickup Location: <strong>{{ order.location }}</strong>
-                                    </p>
-
-                                    {% if order.pickup_time %}
-                                    <p class="mb-1 text-muted small">
-                                        Pickup Time: <strong>{{ order.pickup_time }}</strong>
-                                    </p>
-                                    {% endif %}
-
-                                    {% if order.notes %}
-                                    <p class="mb-1 text-muted small fst-italic">"{{ order.notes }}"</p>
-                                    {% endif %}
-                                </div>
-
-                            </div>
+        <!-- APPROVED ORDERS -->
+        <div class="mb-5">
+            <h5 class="fw-bold text-uppercase text-muted mb-3 border-bottom pb-2">Ready for Pickup</h5>
+            {% if approved_orders %}
+            {% for order in approved_orders %}
+            <div class="card shadow-sm border-0 mb-3 order-card border-start border-success border-4">
+                <div class="card-body p-4 d-flex flex-column flex-md-row gap-4 align-items-center">
+                    <!-- Image -->
+                    <div class="flex-shrink-0">
+                        {% if order.item.image_url %}
+                        <img src="{{ url_for('static', filename=order.item.image_url) }}" alt="{{ order.item.title }}"
+                            class="rounded order-img shadow-sm">
+                        {% else %}
+                        <div
+                            class="bg-light rounded order-img d-flex align-items-center justify-content-center text-muted border">
+                            <i class="bi bi-image fs-4"></i>
                         </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-muted small fst-italic">No orders waiting for pickup.</p>
-                    {% endif %}
-                </div>
-
-
-                <!-- APPROVED ORDERS -->
-                <div class="mb-5">
-                    <h5 class="fw-bold text-uppercase text-muted mb-3 border-bottom pb-2">Ready for Pickup</h5>
-                    {% if approved_orders %}
-                    {% for order in approved_orders %}
-                    <div class="card shadow-sm border-0 mb-3 order-card border-start border-success border-4">
-                        <div class="card-body p-4 d-flex flex-column flex-md-row gap-4 align-items-center">
-                            <!-- Image -->
-                            <div class="flex-shrink-0">
-                                {% if order.item.image_url %}
-                                <img src="{{ url_for('static', filename=order.item.image_url) }}"
-                                    alt="{{ order.item.title }}" class="rounded order-img shadow-sm">
-                                {% else %}
-                                <div
-                                    class="bg-light rounded order-img d-flex align-items-center justify-content-center text-muted border">
-                                    <i class="bi bi-image fs-4"></i>
-                                </div>
-                                {% endif %}
-                            </div>
-                            <!-- Content -->
-                            <div class="flex-grow-1 w-100">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="fw-bold mb-0 text-success">{{ order.item.title }}</h5>
-                                    <span class="badge bg-success status-badge px-3 py-2 rounded-pill">
-                                        <i class="bi bi-check-circle-fill me-1"></i> Approved
-                                    </span>
-                                </div>
-                                <p class="text-muted mb-3">The seller accepted your offer! Please meet at the agreed
-                                    location.</p>
-
-                                <button class="btn btn-outline-success btn-sm fw-medium w-100 w-md-auto"
-                                    onclick="confirmDelivery({{ order.id }})">
-                                    <i class="bi bi-bag-check-fill me-2"></i> Confirm Item Received
-                                </button>
-                            </div>
-                        </div>
+                        {% endif %}
                     </div>
-                    {% endfor %}
-                    {% else %}
-                    <p class="text-muted small fst-italic">No orders are currently waiting for pickup.</p>
-                    {% endif %}
-                </div>
-
-                <!-- DELIVERED ORDERS -->
-                <div class="mb-5">
-                    <h5 class="fw-bold text-uppercase text-muted mb-3 border-bottom pb-2">Past Orders</h5>
-                    {% if delivered_orders %}
-                    {% for order in delivered_orders %}
-                    <div class="card shadow-sm border-0 mb-3 opacity-75">
-                        <div class="card-body p-3 d-flex align-items-center gap-3">
-                            <div class="flex-grow-1">
-                                <h6 class="fw-bold mb-0 text-decoration-line-through text-secondary">{{ order.item.title
-                                    }}</h6>
-                                <small class="text-muted">Completed on {{ order.created_at.strftime('%b %d, %Y')
-                                    }}</small>
-                            </div>
-                            <span class="badge bg-secondary status-badge rounded-pill">Delivered</span>
+                    <!-- Content -->
+                    <div class="flex-grow-1 w-100">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="fw-bold mb-0 text-success">{{ order.item.title }}</h5>
+                            <span class="badge bg-success status-badge px-3 py-2 rounded-pill">
+                                <i class="bi bi-check-circle-fill me-1"></i> Approved
+                            </span>
                         </div>
-                    </div>
-                    {% endfor %}
-                    {% else %}
-                    <p class="text-muted small fst-italic">No past orders yet.</p>
-                    {% endif %}
-                </div>
+                        <p class="text-muted mb-3">The seller accepted your offer! Please meet at the agreed
+                            location.</p>
 
+                        <button class="btn btn-outline-success btn-sm fw-medium w-100 w-md-auto"
+                            onclick="confirmDelivery({{ order.id }})">
+                            <i class="bi bi-bag-check-fill me-2"></i> Confirm Item Received
+                        </button>
+                    </div>
+                </div>
             </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted small fst-italic">No orders are currently waiting for pickup.</p>
+            {% endif %}
         </div>
+
+        <!-- DELIVERED ORDERS -->
+        <div class="mb-5">
+            <h5 class="fw-bold text-uppercase text-muted mb-3 border-bottom pb-2">Past Orders</h5>
+            {% if delivered_orders %}
+            {% for order in delivered_orders %}
+            <div class="card shadow-sm border-0 mb-3 opacity-75">
+                <div class="card-body p-3 d-flex align-items-center gap-3">
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-0 text-decoration-line-through text-secondary">{{ order.item.title
+                            }}</h6>
+                        <small class="text-muted">Completed on {{ order.created_at.strftime('%b %d, %Y')
+                            }}</small>
+                    </div>
+                    <span class="badge bg-secondary status-badge rounded-pill">Delivered</span>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted small fst-italic">No past orders yet.</p>
+            {% endif %}
+        </div>
+
+    </div>
+    </div>
     </div>
 
     <footer class="border-top mt-5 py-4 bg-white text-center text-muted small">

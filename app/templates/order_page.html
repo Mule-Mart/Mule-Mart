@@ -47,10 +47,7 @@
 
                     <div class="icon-input">
                         <i class="bi bi-cash-stack"></i>
-                        <input 
-                            type="text" 
-                            class="form-control bg-light" 
-                            value="${{ '%.2f'|format(item.price) }}" 
+                        <input type="text" class="form-control bg-light" value="${{ '%.2f'|format(item.price) }}"
                             readonly>
                     </div>
 
@@ -65,12 +62,8 @@
 
                     <div class="icon-input">
                         <i class="bi bi-geo-alt"></i>
-                        <input 
-                            type="text" 
-                            name="location" 
-                            class="form-control" 
-                            placeholder="E.g., Miller Steps, Bobs Parking Lot" 
-                            required>
+                        <input type="text" name="location" class="form-control"
+                            placeholder="E.g., Miller Steps, Bobs Parking Lot" required>
                     </div>
                 </div>
 
@@ -84,11 +77,7 @@
                         <div class="col-md-6">
                             <div class="icon-input">
                                 <i class="bi bi-calendar-day"></i>
-                                <input 
-                                    type="date" 
-                                    name="pickup_date" 
-                                    class="form-control" 
-                                    required>
+                                <input type="date" name="pickup_date" class="form-control" required>
                             </div>
                         </div>
 
@@ -96,11 +85,7 @@
                         <div class="col-md-6">
                             <div class="icon-input">
                                 <i class="bi bi-clock"></i>
-                                <input 
-                                    type="time" 
-                                    name="pickup_time" 
-                                    class="form-control" 
-                                    required>
+                                <input type="time" name="pickup_time" class="form-control" required>
                             </div>
                         </div>
 
@@ -115,18 +100,14 @@
 
                     <div class="icon-input">
                         <i class="bi bi-chat-dots"></i>
-                        <textarea 
-                            name="notes" 
-                            class="form-control" 
-                            rows="3" 
+                        <textarea name="notes" class="form-control" rows="3"
                             placeholder="Add timing preferences, details, etc."></textarea>
                     </div>
                 </div>
 
                 <!-- ✨ SECURE PAYMENT SUMMARY (FIX #5) -->
-                <div class="mb-4 p-3 rounded" 
-                     style="background:#f0f4ff; border:1px solid #d6e4ff;">
-                    
+                <div class="mb-4 p-3 rounded" style="background:#f0f4ff; border:1px solid #d6e4ff;">
+
                     <h6 class="fw-bold mb-2">
                         <i class="bi bi-shield-check text-primary"></i> Secure Payment Summary
                     </h6>
@@ -151,8 +132,8 @@
                     </div>
 
                     <p class="mt-2 text-muted small">
-                        Payments are processed securely through Stripe.  
-                        Funds are held safely until pickup is completed.  
+                        Payments are processed securely through Stripe.
+                        Funds are held safely until pickup is completed.
                         The seller cannot cancel after payment is made.
                     </p>
                 </div>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Secure Payment - ColbyNow</title>
@@ -19,7 +20,7 @@
             background: #fff;
             border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
         }
 
         .item-box {
@@ -49,7 +50,7 @@
             width: 100%;
             color: white;
             transition: 0.2s ease-in-out;
-            box-shadow: 0 6px 18px rgba(0,87,255,0.35);
+            box-shadow: 0 6px 18px rgba(0, 87, 255, 0.35);
         }
 
         .pay-btn:hover {
@@ -81,7 +82,7 @@
         <!-- ITEM PREVIEW -->
         <div class="item-box mb-4">
             <img src="{{ url_for('static', filename=item.image_url) }}" class="item-img" alt="Item Image">
-            
+
             <div>
                 <h5 class="fw-semibold mb-1">{{ item.title }}</h5>
                 <p class="mb-1 text-muted" style="font-size: 0.9rem;">Seller: {{ item.seller.name }}</p>
@@ -107,4 +108,5 @@
     </div>
 
 </body>
+
 </html>
