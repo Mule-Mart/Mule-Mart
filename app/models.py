@@ -12,6 +12,18 @@ favorites_table = db.Table(
 )
 
 
+class RecentlyViewed(db.Model):
+    __tablename__ = "recently_viewed"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey("items.id"), nullable=False)
+    viewed_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships
+    item = db.relationship("Item")
+    user = db.relationship("User", backref=db.backref("viewed_history", lazy="dynamic"))
+
+
 class User(UserMixin, db.Model):
     __tablename__ = "users"
 
@@ -20,11 +32,10 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(200), nullable=False)
     first_name = db.Column(db.String(150), nullable=True)
     last_name = db.Column(db.String(150), nullable=True)
-    name = db.Column(db.String(150), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_verified = db.Column(db.Boolean, default=False)
     profile_image = db.Column(db.String(255), nullable=True)
-    recently_viewed = db.Column(db.PickleType, default=list)
+
     favorites = db.relationship(
         "Item",
         secondary=favorites_table,
@@ -33,6 +44,16 @@ class User(UserMixin, db.Model):
     )
 
     items = db.relationship("Item", backref="seller", lazy=True)
+
+    @property
+    def full_name(self):
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        return self.first_name or self.last_name or "Unknown"
+
+    @property
+    def name(self):
+        return self.full_name
 
     def __repr__(self):
         return f"<User {self.email}>"
@@ -53,7 +74,6 @@ class Item(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     seller_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
-
 
     def __repr__(self):
         return f"<Item {self.title} (${self.price})>"
@@ -92,4 +112,3 @@ class Order(db.Model):
 
     def __repr__(self):
         return f"<Order #{self.id} for item {self.item_id}>"
-
