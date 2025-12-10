@@ -12,7 +12,7 @@ from flask import (
 
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from .models import Item, db, User, Order
+from .models import Item, Order, User, RecentlyViewed, db
 import os
 from datetime import datetime
 from flask_mail import Message
@@ -35,7 +35,7 @@ def home():
         # User performed a search — show filtered results
         results = (
             Item.search(search)
-            .filter_by(is_active=True)                     
+            .filter_by(is_active=True)
             .order_by(Item.created_at.desc())
             .limit(12)
             .all()
@@ -44,25 +44,25 @@ def home():
         return render_template(
             "home.html",
             user=current_user,
-            category_items=[], 
-            recent_items=results, 
+            category_items=[],
+            recent_items=results,
             current_search=search,
         )
 
-    # Default homepage 
+    # Default homepage
     categories = ["electronics", "clothing", "furniture", "books", "miscellaneous"]
 
     category_items = [
-        Item.query.filter_by(category=category, is_active=True)   
-            .order_by(Item.created_at.desc())
-            .first()
+        Item.query.filter_by(category=category, is_active=True)
+        .order_by(Item.created_at.desc())
+        .first()
         for category in categories
     ]
 
     category_items = [item for item in category_items if item]
 
     recent_items = (
-        Item.query.filter_by(is_active=True)                      
+        Item.query.filter_by(is_active=True)
         .order_by(Item.created_at.desc())
         .limit(6)
         .all()
@@ -75,7 +75,6 @@ def home():
         recent_items=recent_items,
         current_search=None,
     )
-
 
 
 @main.route("/buy_item")
@@ -109,9 +108,15 @@ def buy_item():
 
     items = query.all()
 
-    categories = [c[0] for c in db.session.query(Item.category).distinct().all() if c[0]]
-    seller_types = [s[0] for s in db.session.query(Item.seller_type).distinct().all() if s[0]]
-    conditions = [c[0] for c in db.session.query(Item.condition).distinct().all() if c[0]]
+    categories = [
+        c[0] for c in db.session.query(Item.category).distinct().all() if c[0]
+    ]
+    seller_types = [
+        s[0] for s in db.session.query(Item.seller_type).distinct().all() if s[0]
+    ]
+    conditions = [
+        c[0] for c in db.session.query(Item.condition).distinct().all() if c[0]
+    ]
 
     return render_template(
         "buy_item.html",
@@ -126,7 +131,6 @@ def buy_item():
         current_sort=sort_by,
         item_count=len(items),
     )
-
 
 
 @main.route("/post-item", methods=["GET", "POST"])
@@ -219,25 +223,21 @@ def post_item():
 def item_details(item_id):
     item = Item.query.get_or_404(item_id)
 
-    # Always convert to a Python list
-    viewed = list(current_user.recently_viewed or [])
+    # --- Recently Viewed (Upsert Logic) ---
+    if current_user.is_authenticated:
+        existing_view = RecentlyViewed.query.filter_by(
+            user_id=current_user.id, item_id=item.id
+        ).first()
 
-    # Remove if already exists
-    if item_id in viewed:
-        viewed.remove(item_id)
+        if existing_view:
+            existing_view.viewed_at = datetime.utcnow()
+        else:
+            new_view = RecentlyViewed(user_id=current_user.id, item_id=item.id)
+            db.session.add(new_view)
 
-    # Insert newest at the front
-    viewed.insert(0, item_id)
-
-    # Keep only last 5
-    viewed = viewed[:5]
-
-    # Save back to user
-    current_user.recently_viewed = viewed
-    db.session.commit()
+        db.session.commit()
 
     return render_template("item_details.html", item=item)
-
 
 
 @main.route("/seller/<int:seller_id>")
@@ -269,9 +269,9 @@ def my_listings():
     # Orders for this seller
     incoming_orders = (
         Order.query.join(Item)
-            .filter(Item.seller_id == current_user.id)
-            .order_by(Order.created_at.desc())
-            .all()
+        .filter(Item.seller_id == current_user.id)
+        .order_by(Order.created_at.desc())
+        .all()
     )
 
     paid_orders = [o for o in incoming_orders if o.status == "paid_pending_pickup"]
@@ -288,8 +288,6 @@ def my_listings():
         completed_orders=completed_orders,
         current_search=search,
     )
-
-
 
 
 @main.route("/handle_order/<int:order_id>/<action>", methods=["POST"])
@@ -402,22 +400,21 @@ def create_order(item_id):
     notes = request.form.get("notes")
 
     # pickup date + time
-    pickup_date = request.form.get("pickup_date")   # ex: 2025-12-08
-    pickup_time = request.form.get("pickup_time")   # ex: 14:30
+    pickup_date = request.form.get("pickup_date")  # ex: 2025-12-08
+    pickup_time = request.form.get("pickup_time")  # ex: 14:30
 
     # Convert date + time to a single datetime
     combined_pickup_time = None
     if pickup_date and pickup_time:
         try:
             combined_pickup_time = datetime.strptime(
-                f"{pickup_date} {pickup_time}",
-                "%Y-%m-%d %H:%M"
+                f"{pickup_date} {pickup_time}", "%Y-%m-%d %H:%M"
             )
         except ValueError:
             flash("Invalid pickup date or time.", "danger")
             return redirect(url_for("main.place_order", item_id=item_id))
 
-    # Create the order 
+    # Create the order
     order = Order(
         buyer_id=current_user.id,
         item_id=item_id,
@@ -435,16 +432,15 @@ def create_order(item_id):
     return redirect(url_for("main.payment_page", order_id=order.id))
 
 
-
 @main.route("/payment/<int:order_id>")
 @login_required
 def payment_page(order_id):
     order = Order.query.get_or_404(order_id)
-    
+
     if order.buyer_id != current_user.id:
         abort(403)
 
-    item = order.item  
+    item = order.item
 
     return render_template("payment.html", order=order, item=item)
 
@@ -455,11 +451,7 @@ def my_orders():
     search = request.args.get("search", "").strip()
 
     # Base query
-    query = (
-        Order.query
-        .join(Item)
-        .filter(Order.buyer_id == current_user.id)
-    )
+    query = Order.query.join(Item).filter(Order.buyer_id == current_user.id)
 
     # Multi-word search
     if search:
@@ -470,7 +462,9 @@ def my_orders():
     orders = query.order_by(Order.created_at.desc()).all()
 
     # Group orders
-    paid_pending_pickup_orders = [o for o in orders if o.status == "paid_pending_pickup"]
+    paid_pending_pickup_orders = [
+        o for o in orders if o.status == "paid_pending_pickup"
+    ]
     approved_orders = [o for o in orders if o.status == "approved"]
     delivered_orders = [o for o in orders if o.status == "delivered"]
 
@@ -481,9 +475,6 @@ def my_orders():
         delivered_orders=delivered_orders,
         current_search=search,
     )
-
-
-
 
 
 @main.route("/confirm_order/<int:order_id>", methods=["POST"])
@@ -529,6 +520,7 @@ def remove_favorite(item_id):
         flash("Removed from favorites", "success")
     return redirect(request.referrer or url_for("main.favorites"))
 
+
 @main.route("/autocomplete")
 @login_required
 def autocomplete():
@@ -542,8 +534,7 @@ def autocomplete():
 
     # Get up to 8 matching items
     items = (
-        Item.query
-        .filter(Item.title.ilike(f"%{query}%"))
+        Item.query.filter(Item.title.ilike(f"%{query}%"))
         .order_by(Item.created_at.desc())
         .limit(8)
         .all()
@@ -557,14 +548,9 @@ def autocomplete():
             else url_for("static", filename="images/default_item.png")
         )
 
-        results.append({
-            "id": item.id,
-            "title": item.title,
-            "image": image_url
-        })
+        results.append({"id": item.id, "title": item.title, "image": image_url})
 
     return jsonify(results)
-
 
 
 @main.route("/contact_us", methods=["GET", "POST"])
@@ -611,11 +597,10 @@ You have received a new message from the contact form:
     return render_template("contact_us.html")
 
 
-
 @main.route("/profile")
 @login_required
 def profile():
-    # Safe check for favorites 
+    # Safe check for favorites
     try:
         favorites = (
             current_user.favorites.all()
@@ -637,9 +622,15 @@ def profile():
     listings = Item.query.filter_by(seller_id=current_user.id).all()
 
     # Convert item IDs -> real Item objects
+    # Recently Viewed Items (from relation)
     recent_items = []
-    if current_user.recently_viewed:
-        recent_items = Item.query.filter(Item.id.in_(current_user.recently_viewed)).all()
+    if current_user.is_authenticated:
+        views = (
+            current_user.viewed_history.order_by(RecentlyViewed.viewed_at.desc())
+            .limit(5)
+            .all()
+        )
+        recent_items = [v.item for v in views]
 
     return render_template(
         "profile.html",
@@ -647,21 +638,20 @@ def profile():
         favorites=favorites,
         orders=orders,
         listings=listings,
-        recent_items=recent_items
+        recent_items=recent_items,
     )
 
 
-
-@main.route('/update_profile', methods=['POST'])
+@main.route("/update_profile", methods=["POST"])
 @login_required
 def update_profile():
-    first_name = request.form.get('first_name')
-    last_name = request.form.get('last_name')
+    first_name = request.form.get("first_name")
+    last_name = request.form.get("last_name")
 
     current_user.first_name = first_name
     current_user.last_name = last_name
 
-    image = request.files.get('profile_image')
+    image = request.files.get("profile_image")
     if image and image.filename != "":
         upload_path = os.path.join(current_app.static_folder, "profile_images")
         os.makedirs(upload_path, exist_ok=True)
@@ -675,12 +665,7 @@ def update_profile():
         print("DEBUG: Updating profile image to:", current_user.profile_image)
 
     db.session.commit()
-    return redirect(url_for('main.profile'))
-
-
-
-
-
+    return redirect(url_for("main.profile"))
 
 
 @main.route("/start_checkout/<int:order_id>", methods=["POST"])
@@ -732,7 +717,6 @@ def start_checkout(order_id):
     return redirect(checkout_session.url)
 
 
-
 @main.route("/payment_success/<int:order_id>")
 @login_required
 def payment_success(order_id):
@@ -755,9 +739,8 @@ def payment_success(order_id):
 
     db.session.commit()
 
-    # Render the success UI 
+    # Render the success UI
     return render_template("payment_success.html", order=order, item=item)
-
 
 
 @main.route("/payment_cancelled/<int:order_id>")
@@ -771,7 +754,6 @@ def payment_cancelled(order_id):
 
     flash("Payment was cancelled. No charges were made.", "warning")
     return redirect(url_for("main.my_orders"))
-
 
 
 @main.route("/complete_order/<int:order_id>", methods=["POST"])
@@ -795,8 +777,6 @@ def complete_order(order_id):
 
     flash("Order marked as delivered!", "success")
     return redirect(url_for("main.my_listings"))
-
-
 
 
 @main.route("/approve_pickup/<int:order_id>", methods=["POST"])
