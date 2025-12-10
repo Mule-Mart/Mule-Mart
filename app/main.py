@@ -23,6 +23,13 @@ main = Blueprint("main", __name__)
 
 
 @main.route("/")
+def landing():
+    """
+    Displays the landing page (dashboard).
+    """
+    return render_template("landing.html")
+
+@main.route("/home")
 @login_required
 def home():
     """
