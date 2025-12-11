@@ -21,32 +21,33 @@
         }
     </style>
 </head>
+
 <body class="bg-light">
     {% include "_navbar.html" %}
-    
+
     <div class="container py-4">
         <h1 class="mb-4">Messages</h1>
-      
+
         <div class="list-group">
             {% for user in conversations %}
-              {% set unread = user.messages_sent
-                  .filter_by(receiver_id=current_user.id, is_read=False)
-                  .count()
-              %}
-          
-              <a href="{{ url_for('main.chat', receiver_id=user.id) }}"
-                 class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-          
-                <strong>{{ user.name }}</strong>
-          
-                {% if unread > 0 %}
-                  <span class="badge bg-danger rounded-pill">{{ unread }}</span>
-                {% endif %}
-              </a>
-            {% endfor %}
-          </div>
+            {% set unread = user.messages_sent
+            .filter_by(receiver_id=current_user.id, is_read=False)
+            .count()
+            %}
 
-      </div>
+            <a href="{{ url_for('main.chat', receiver_id=user.id) }}"
+                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+
+                <strong>{{ user.name }}</strong>
+
+                {% if unread > 0 %}
+                <span class="badge bg-danger rounded-pill">{{ unread }}</span>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+
+    </div>
 
     <!-- End of Main Content -->
 
@@ -97,11 +98,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
-    <script>
-        const receiver_id = {{ receiver_id }};
-        const CURRENT_USER_ID = {{ current_user.id }};
-    </script>
-    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
-</body>
+
 
 </html>
