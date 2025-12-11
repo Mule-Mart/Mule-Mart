@@ -266,9 +266,9 @@ def google_login():
     name = user_info.get("name", "Google User")
 
     # --- Restrict Google login to Colby emails ---
-    if not email.endswith("@colby.edu"):
-        flash("Please use your @colby.edu email address to sign in.", "danger")
-        return redirect(url_for("auth.login"))
+    # if not email.endswith("@colby.edu"):
+    #     flash("Please use your @colby.edu email address to sign in.", "danger")
+    #     return redirect(url_for("auth.login"))
 
     # Check if user exists
     user = User.query.filter_by(email=email).first()
