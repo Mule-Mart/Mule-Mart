@@ -5,7 +5,7 @@ Authors: Francis O’Hara Aidoo, Rose Agyapong, Ninh Giang Nguyen, Simon Lartey
 <center> <img src="app/static/images/colbynow_merch_logo.png" width=300px></center>
 
 👉 Live App: https://colbynowmerchandise.com/  
-👉 Live Demo: [Watch here](https://drive.google.com/drive/u/0/home)
+👉 Live Demo: [Watch here](https://drive.google.com/file/d/1hK4I7gq76e5CHXErsHI6UwAylSC5V6pP/view?usp=sharing)
 
 - A full-stack web application that serves as an online marketplace for the Colby College community where students, staff, and faculty can buy, sell, and donate items.
 - This project uses a Flask backend to handle user authentication, product listings, and other business logic, with a standard HTML, CSS, and JavaScript frontend.
