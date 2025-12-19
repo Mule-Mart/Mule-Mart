@@ -138,7 +138,8 @@
 
                                     <!-- Thumbnail -->
                                     <a href="{{ url_for('main.item_details', item_id=order.item.id) }}">
-                                        <img src="{{ url_for('static', filename=order.item.image_url) if order.item.image_url else url_for('static', filename='images/default_item.png') }}"
+                                        <img src="{{ order.item.item_image_url }}"
+                                            onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default_item.png') }}'"
                                             alt="{{ order.item.title }}" class="me-3"
                                             style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;">
                                     </a>

@@ -213,7 +213,7 @@ def post_item():
                 seller_type=seller_type if seller_type else None,
                 condition=condition if condition else None,
                 price=price,
-                image_url=image_url,
+                item_image=image_url,
                 seller_id=current_user.id,
                 embedding=generate_embedding(f"{title} {description}"),
             )
@@ -373,7 +373,7 @@ def edit_item(item_id):
                         os.makedirs(upload_folder, exist_ok=True)
                         filepath = os.path.join(upload_folder, filename)
                         file.save(filepath)
-                        item.image_url = f"uploads/{filename}"
+                        item.item_image = f"uploads/{filename}"
 
             db.session.commit()
             flash("Listing updated successfully!", "success")
@@ -549,13 +549,7 @@ def autocomplete():
 
     results = []
     for item in items:
-        image_url = (
-            url_for("static", filename=item.image_url)
-            if item.image_url
-            else url_for("static", filename="images/default_item.png")
-        )
-
-        results.append({"id": item.id, "title": item.title, "image": image_url})
+        results.append({"id": item.id, "title": item.title, "image": item.item_image_url})
 
     return jsonify(results)
 

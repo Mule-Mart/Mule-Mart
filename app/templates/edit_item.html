@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -40,7 +41,8 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Price ($)</label>
-                    <input type="number" name="price" step="0.01" value="{{ item.price }}" class="form-control" required>
+                    <input type="number" name="price" step="0.01" value="{{ item.price }}" class="form-control"
+                        required>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Size (optional)</label>
@@ -51,8 +53,10 @@
             <div class="mb-3">
                 <label class="form-label">Upload New Image (optional)</label>
                 <input type="file" name="image" class="form-control">
-                {% if item.image_url %}
-                <p class="small text-muted mt-2">Current: <img src="{{ url_for('static', filename=item.image_url) }}" width="120" class="rounded"></p>
+                {% if item.item_image %}
+                <p class="small text-muted mt-2">Current: <img src="{{ item.item_image_url }}"
+                        onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default_item.png') }}'"
+                        width="120" class="rounded"></p>
                 {% endif %}
             </div>
 
@@ -65,4 +69,5 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

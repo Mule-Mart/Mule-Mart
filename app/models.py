@@ -72,7 +72,8 @@ class User(UserMixin, db.Model):
 
     @property
     def profile_image_url(self):
-        """Generates a presigned URL for making GET requests to retrieving the current user's profile picture from a cloud storage bucket.
+        """
+        Generates a presigned URL for making GET requests to retrieving the current user's profile picture from a cloud storage bucket.
         If user has no profile image, fall back to default profile picture.
         """
         if self.profile_image:
@@ -85,7 +86,6 @@ class User(UserMixin, db.Model):
                     },
                     ExpiresIn=3600,
                 )
-                print(image_url)
                 return image_url
             except Exception as e:
                 current_app.logger.error(f"Error generating presigned URL: {e}")
@@ -105,7 +105,7 @@ class Item(db.Model):
     seller_type = db.Column(db.String(50))
     condition = db.Column(db.String(50))
     price = db.Column(db.Float, nullable=False)
-    image_url = db.Column(db.String(255))
+    item_image = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     seller_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
@@ -169,6 +169,25 @@ class Item(db.Model):
 
         # 5. Return top N items
         return [item for score, item in scored_items[:limit]]
+
+    @property
+    def item_image_url(self):
+        """
+        Generates a presigned URL for making GET requests to retrieve an image of this item.
+        Falls back to default item image if item image URL could not be generated.
+        """
+        if self.item_image:
+            try:
+                image_url = current_app.s3_client.generate_presigned_url(
+                    "get_object",
+                    Params={"Bucket": current_app.s3_bucket_id, "Key": self.item_image},
+                    ExpiresIn=3600,
+                )
+                return image_url
+            except:
+                return url_for("static", filename="images/default_item.png")
+        else:
+            return url_for("static", filename="images/default_item.png")
 
 
 class Order(db.Model):
