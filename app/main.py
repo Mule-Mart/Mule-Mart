@@ -391,13 +391,29 @@ def edit_item(item_id):
 @login_required
 def delete_item(item_id):
     item = Item.query.get_or_404(item_id)
+
+    # Authorization check
     if item.seller_id != current_user.id:
         flash("Unauthorized action.", "danger")
         return redirect(url_for("main.my_listings"))
+
+    # Prevent deletion if item has orders
+    from app.models import Order
+    orders_count = Order.query.filter_by(item_id=item.id).count()
+    if orders_count > 0:
+        flash(
+            "This item cannot be deleted because it has existing orders.",
+            "warning"
+        )
+        return redirect(url_for("main.my_listings"))
+
+    # Safe to delete
     db.session.delete(item)
     db.session.commit()
+
     flash("Item deleted successfully.", "success")
     return redirect(url_for("main.my_listings"))
+
 
 
 @main.route("/order/<int:item_id>", methods=["GET"])
