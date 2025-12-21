@@ -161,32 +161,9 @@ def post_item():
             seller_type = request.form.get("seller_type", "").strip()
             condition = request.form.get("condition", "").strip()
             price_str = request.form.get("price", "").strip()
-
-            image_url = None
-            if "image" in request.files:
-                file = request.files["image"]
-                if file and file.filename:
-                    allowed_extensions = {"png", "jpg", "jpeg", "gif", "webp"}
-                    filename = secure_filename(file.filename)
-                    if (
-                        "." in filename
-                        and filename.rsplit(".", 1)[1].lower() in allowed_extensions
-                    ):
-                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                        filename = f"{timestamp}_{filename}"
-                        upload_folder = os.path.join(
-                            current_app.static_folder, "uploads"
-                        )
-                        os.makedirs(upload_folder, exist_ok=True)
-                        filepath = os.path.join(upload_folder, filename)
-                        file.save(filepath)
-                        image_url = f"uploads/{filename}"
-                    else:
-                        flash(
-                            "Invalid file type. Please upload an image (PNG, JPG, JPEG, GIF, WEBP).",
-                            "danger",
-                        )
-                        return redirect(url_for("main.post_item"))
+            uploaded_image_filename = request.form.get(
+                "uploaded_image_filename", ""
+            ).strip()
 
             if not title:
                 flash("Item name is required.", "danger")
@@ -194,6 +171,10 @@ def post_item():
 
             if not price_str:
                 flash("Price is required.", "danger")
+                return redirect(url_for("main.post_item"))
+
+            if not uploaded_image_filename:
+                flash("There was an error uploading your item image file.", "danger")
                 return redirect(url_for("main.post_item"))
 
             try:
@@ -213,7 +194,7 @@ def post_item():
                 seller_type=seller_type if seller_type else None,
                 condition=condition if condition else None,
                 price=price,
-                item_image=image_url,
+                item_image=uploaded_image_filename,
                 seller_id=current_user.id,
                 embedding=generate_embedding(f"{title} {description}"),
             )
@@ -344,7 +325,6 @@ def edit_item(item_id):
             item.size = request.form.get("size", item.size).strip()
             item.seller_type = request.form.get("seller_type", item.seller_type).strip()
             item.condition = request.form.get("condition", item.condition).strip()
-
             price_str = request.form.get("price", str(item.price))
             try:
                 price_clean = price_str.replace("$", "").replace(",", "").strip()
@@ -356,24 +336,13 @@ def edit_item(item_id):
             # Update embedding
             item.embedding = generate_embedding(f"{item.title} {item.description}")
 
-            if "image" in request.files:
-                file = request.files["image"]
-                if file and file.filename:
-                    allowed_extensions = {"png", "jpg", "jpeg", "gif", "webp"}
-                    filename = secure_filename(file.filename)
-                    if (
-                        "." in filename
-                        and filename.rsplit(".", 1)[1].lower() in allowed_extensions
-                    ):
-                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                        filename = f"{timestamp}_{filename}"
-                        upload_folder = os.path.join(
-                            current_app.static_folder, "uploads"
-                        )
-                        os.makedirs(upload_folder, exist_ok=True)
-                        filepath = os.path.join(upload_folder, filename)
-                        file.save(filepath)
-                        item.item_image = f"uploads/{filename}"
+            uploaded_image_filename = request.form.get("uploaded_image_filename")
+
+            if uploaded_image_filename != "":
+                old_item_image = item.item_image
+                if old_item_image:
+                    current_app.s3_client.delete_object(Bucket=current_app.s3_bucket_id, Key=old_item_image)
+                item.item_image = uploaded_image_filename
 
             db.session.commit()
             flash("Listing updated successfully!", "success")
@@ -418,8 +387,8 @@ def create_order(item_id):
     notes = request.form.get("notes")
 
     # pickup date + time
-    pickup_date = request.form.get("pickup_date")  
-    pickup_time = request.form.get("pickup_time")  
+    pickup_date = request.form.get("pickup_date")
+    pickup_time = request.form.get("pickup_time")
 
     # Convert date + time to a single datetime
     combined_pickup_time = None
@@ -449,7 +418,6 @@ def create_order(item_id):
     return redirect(url_for("main.my_orders"))
 
 
-
 @main.route("/my_orders")
 @login_required
 def my_orders():
@@ -472,8 +440,6 @@ def my_orders():
     completed_orders = [o for o in orders if o.status == "completed"]
     cancelled_orders = [o for o in orders if o.status == "cancelled"]
 
-
-
     return render_template(
         "my_orders.html",
         pending_orders=pending_orders,
@@ -494,6 +460,7 @@ def confirm_order(order_id):
     db.session.commit()
     return jsonify({"success": True})
 
+
 @main.route("/favorites")
 @login_required
 def favorites():
@@ -503,7 +470,6 @@ def favorites():
         else list(current_user.favorites)
     )
     return render_template("favorites.html", favorites=fav_items)
-
 
 
 @main.route("/favorites/add/<int:item_id>", methods=["POST"])
@@ -549,7 +515,9 @@ def autocomplete():
 
     results = []
     for item in items:
-        results.append({"id": item.id, "title": item.title, "image": item.item_image_url})
+        results.append(
+            {"id": item.id, "title": item.title, "image": item.item_image_url}
+        )
 
     return jsonify(results)
 
@@ -604,9 +572,7 @@ def chat(receiver_id):
     seller = User.query.get_or_404(receiver_id)
 
     Chat.query.filter_by(
-        sender_id=receiver_id,
-        receiver_id=current_user.id,
-        is_read=False
+        sender_id=receiver_id, receiver_id=current_user.id, is_read=False
     ).update({"is_read": True})
 
     db.session.commit()
@@ -625,7 +591,7 @@ def send_message():
     msg = Chat(
         sender_id=current_user.id,
         receiver_id=data["receiver_id"],
-        content=data["content"]
+        content=data["content"],
     )
     db.session.add(msg)
     db.session.commit()
@@ -637,40 +603,38 @@ def send_message():
 def get_messages(user_id):
     ny_tz = pytz.timezone("America/New_York")
 
-    msgs = Chat.query.filter(
-        ((Chat.sender_id == current_user.id) & (Chat.receiver_id == user_id)) |
-        ((Chat.sender_id == user_id) & (Chat.receiver_id == current_user.id))
-    ).order_by(Chat.timestamp).all()
+    msgs = (
+        Chat.query.filter(
+            ((Chat.sender_id == current_user.id) & (Chat.receiver_id == user_id))
+            | ((Chat.sender_id == user_id) & (Chat.receiver_id == current_user.id))
+        )
+        .order_by(Chat.timestamp)
+        .all()
+    )
 
-    return jsonify([
-        {
-            "sender": m.sender_id,
-            "content": m.content,
-            "time": m.timestamp
-                .replace(tzinfo=pytz.utc)
+    return jsonify(
+        [
+            {
+                "sender": m.sender_id,
+                "content": m.content,
+                "time": m.timestamp.replace(tzinfo=pytz.utc)
                 .astimezone(ny_tz)
-                .strftime("%b %d • %I:%M %p")
-        }
-        for m in msgs
-    ])
+                .strftime("%b %d • %I:%M %p"),
+            }
+            for m in msgs
+        ]
+    )
+
 
 @main.route("/inbox")
 @login_required
 def inbox():
     users = (
-        User.query
-        .join(
-            Chat,
-            or_(
-                Chat.sender_id == User.id,
-                Chat.receiver_id == User.id
-            )
+        User.query.join(
+            Chat, or_(Chat.sender_id == User.id, Chat.receiver_id == User.id)
         )
         .filter(
-            or_(
-                Chat.sender_id == current_user.id,
-                Chat.receiver_id == current_user.id
-            )
+            or_(Chat.sender_id == current_user.id, Chat.receiver_id == current_user.id)
         )
         .filter(User.id != current_user.id)
         .distinct()
@@ -678,8 +642,8 @@ def inbox():
     )
 
     return render_template("inbox.html", conversations=users)
- 
- 
+
+
 @main.route("/profile")
 @login_required
 def profile():
@@ -691,7 +655,7 @@ def profile():
             else list(current_user.favorites)
         )
     except:
-        favorites = []  
+        favorites = []
 
     # Orders placed by this user
     orders = (
@@ -730,26 +694,16 @@ def profile():
 def update_profile():
     first_name = request.form.get("first_name")
     last_name = request.form.get("last_name")
-
+    uploaded_image_filename = request.form.get("uploaded_image_filename")
     current_user.first_name = first_name
     current_user.last_name = last_name
-
-    image = request.files.get("profile_image")
-    if image and image.filename != "":
-        upload_path = os.path.join(current_app.static_folder, "profile_images")
-        os.makedirs(upload_path, exist_ok=True)
-
-        filename = f"{current_user.id}.png"
-        filepath = os.path.join(upload_path, filename)
-        image.save(filepath)
-
-        # Store RELATIVE path
-        current_user.profile_image = f"profile_images/{filename}"
-        print("DEBUG: Updating profile image to:", current_user.profile_image)
-
+    if uploaded_image_filename != "":
+        old_profile_image = current_user.profile_image
+        if old_profile_image:
+            current_app.s3_client.delete_object(Bucket=current_app.s3_bucket_id, Key=old_profile_image)
+        current_user.profile_image = uploaded_image_filename
     db.session.commit()
     return redirect(url_for("main.profile"))
-
 
 
 @main.route("/approve_pickup/<int:order_id>", methods=["POST"])
@@ -766,7 +720,6 @@ def approve_pickup(order_id):
         flash("This order cannot be approved.", "warning")
         return redirect(url_for("main.my_listings"))
 
-
     # Change state to approved
     order.status = "approved"
     order.item.is_active = False
@@ -774,7 +727,6 @@ def approve_pickup(order_id):
 
     flash("Pickup approved! The buyer can now pick up the item.", "success")
     return redirect(url_for("main.my_listings"))
-
 
 
 @main.route("/mark_sold/<int:order_id>", methods=["POST"])
