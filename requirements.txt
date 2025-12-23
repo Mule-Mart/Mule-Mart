@@ -34,3 +34,4 @@ numpy
 pytz
 pytest 
 pytest-cov
+boto3==1.42.12

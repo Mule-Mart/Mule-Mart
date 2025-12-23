@@ -14,6 +14,7 @@ env/
 # VSCode and IDE settings
 .vscode/
 .idea/
+.agent/
 
 # Database and instance files
 *.db

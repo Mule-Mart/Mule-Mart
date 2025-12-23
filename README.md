@@ -1,9 +1,75 @@
 # Colby-Now-Merchandise
-<center> <img src="app/static/images/colbynow_merch_logo.png" width=300px></center>
-A full-stack web application that serves as an online marketplace for the Colby College community where students, staff, and faculty can buy, sell, and donate items.
- - This project uses a **Flask** backend to handle user authentication, product listings, and other business logic, with a standard **HTML**, **CSS**, and **JavaScript** frontend.  
 
-## Project Structure
+Authors: Francis O’Hara Aidoo, Rose Agyapong, Ninh Giang Nguyen, Simon Lartey
+
+<center> <img src="app/static/images/colbynow_merch_logo.png" width=300px></center>
+
+👉 Live App: https://colbynowmerchandise.com/  
+👉 Live Demo: [Watch here](https://drive.google.com/file/d/1hK4I7gq76e5CHXErsHI6UwAylSC5V6pP/view?usp=sharing)
+
+- A full-stack web application that serves as an online marketplace for the Colby College community where students, staff, and faculty can buy, sell, and donate items.
+- This project uses a Flask backend to handle user authentication, product listings, and other business logic, with a standard HTML, CSS, and JavaScript frontend.
+
+## Key Features
+
+### Authentication and Security
+- Secure sign-up and login for verified users (just Colby people)
+- Google OAuth authentication
+- Password reset and account recovery
+
+### Buyer Features
+- Browse all available listings with images and prices
+- View detailed item pages before purchasing
+- Filter and sort items by category
+- Semantic search for meaning-based item discovery
+- Add, edit, and remove items from favorites
+- Place orders with custom offers and meetup details
+- Track order status (pending, approved, completed)
+
+### Seller Features
+- Create and manage item listings
+- View incoming order requests
+- Approve or cancel orders
+- Mark items as sold after successful exchange
+
+### Communication
+- Real-time chat between buyers and sellers
+- Inbox view with unread message counts
+- Persistent conversation history
+
+### User Experience
+- Landing page with platform overview
+- Profile page with editable user information and statistics
+- Favorites page for saved items
+- Revamped My Orders and My Listings dashboards
+
+### Intelligent Search Extension
+- A major technical extension of this project is semantic search, implemented using SentenceTransformer embeddings. Instead of relying solely on keyword matching, the system retrieves conceptually related items based on meaning. 
+
+---
+
+## CI/CD Pipeline
+
+The project uses GitHub Actions to enforce code quality and deployment reliability.
+
+CI/CD workflow:
+1. Run linting and automated tests by pytest
+2. Enforce 95% test coverage 
+3. Deploy to Heroku only if all checks pass
+
+---
+
+## Tech Stack
+
+- Backend: Python, Flask, SQLAlchemy, Flask-Login, RESTful APIs
+- Frontend: HTML, CSS, JavaScript, Bootstrap 5
+- Database: SQLite for local development, PostgreSQL for production
+- Search and Machine Learning: SentenceTransformer for semantic search
+- Testing: Pytest, pytest-cov
+- Deployment: Heroku, GitHub Actions
+
+---
+## Project structure
 
 ```
 Colby-Now-Merchandise/
