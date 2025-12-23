@@ -1,9 +1,9 @@
 import os
+import sys
+from unittest.mock import MagicMock
 import pytest
 from flask import current_app
 from werkzeug.security import generate_password_hash
-
-import sys, os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -14,6 +14,13 @@ os.environ.setdefault("GOOGLE_CLIENT_ID", "dummy-client")
 os.environ.setdefault("GOOGLE_CLIENT_SECRET", "dummy-secret")
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 
+# Mock imported libraries
+sys.modules["boto3"] = MagicMock()
+botocore_mock = MagicMock()
+sys.modules["botocore"] = botocore_mock
+botocore_config_mock = MagicMock()
+sys.modules["botocore.config"] = botocore_config_mock
+sys.modules["sentence_transformers"] = MagicMock()
 
 from app import create_app
 from app.models import db, User, Item, Order, Chat
@@ -130,6 +137,18 @@ def seller_user(create_user):
     return u
 
 
+@pytest.fixture(autouse=True)
+def cleanup(app):
+    """
+    Clean up the database after each test.
+    """
+    yield
+    with app.app_context():
+        db.session.remove()
+        db.drop_all()
+        db.create_all()
+
+
 @pytest.fixture
 def sample_item(seller_user):
     """
@@ -143,7 +162,7 @@ def sample_item(seller_user):
         seller_type="student",
         condition="new",
         price=10.0,
-        image_url=None,
+        item_image=None,
         seller_id=seller_user.id,
         is_active=True,
         embedding=[0.1, 0.2, 0.3],
