@@ -35,3 +35,4 @@ pytz
 pytest 
 pytest-cov
 boto3==1.42.12
+black==25.12.0
