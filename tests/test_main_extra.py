@@ -3,6 +3,7 @@ from unittest.mock import patch
 from datetime import datetime
 import pytest
 from app.models import User, Item, Order, db, RecentlyViewed
+from werkzeug.security import generate_password_hash
 
 EMBED_VECTOR = [0.1, 0.2, 0.3]
 
@@ -15,7 +16,7 @@ def logged_user(client, app):
 
     u = User(
         email="extra@colby.edu",
-        password="x",
+        password=generate_password_hash("x"),
         first_name="Extra",
         last_name="User",
         is_verified=True,
@@ -81,18 +82,23 @@ def test_post_item_invalid_extension(client, logged_user):
     bad_file = (io.BytesIO(b"data"), "file.txt")
     resp = client.post(
         "/post-item",
-        data={"title": "X", "price": "5", "image": bad_file},
+        data={
+            "title": "X",
+            "price": "5",
+            "image": bad_file,
+            "uploaded_image_filename": "",
+        },
         content_type="multipart/form-data",
         follow_redirects=True,
     )
-    assert b"Invalid file type" in resp.data
+    assert b"error uploading" in resp.data.lower()
 
 
 @patch("app.main.generate_embedding", side_effect=Exception("Boom"))
 def test_post_item_embedding_failure(mock_emb, client, logged_user):
     resp = client.post(
         "/post-item",
-        data={"title": "Fail", "price": "9.99"},
+        data={"title": "Fail", "price": "9.99", "uploaded_image_filename": "test.png"},
         follow_redirects=True,
     )
     assert b"Error posting item" in resp.data
@@ -150,24 +156,29 @@ def test_handle_order_404(client, logged_user):
 def test_edit_item_unauthorized(client, logged_user, item, app):
     # create another user
 
-    other = User(
+    u = User(
         email="other@colby.edu",
-        password="x",
+        password=generate_password_hash("x"),
         first_name="O",
         last_name="U",
         is_verified=True,
     )
-    db.session.add(other)
+    db.session.add(u)
     db.session.commit()
 
     client.post("/auth/login", data={"email": "other@colby.edu", "password": "x"})
 
+    # Re-fetch item to ensure it's not stale after other user login
+    item_id = item.id
+    db.session.expire_all()
+    item = db.session.get(Item, item_id)
+
     resp = client.post(
-        f"/edit_item/{item.id}",
-        data={"title": "Nope"},
+        f"/edit_item/{item_id}",
+        data={"title": "Nope", "uploaded_image_filename": ""},
         follow_redirects=True,
     )
-    assert b"Unauthorized" in resp.data
+    assert b"Unauthorized" in resp.data or b"unauthorized" in resp.data.lower()
 
 
 def test_edit_item_invalid_extension(client, logged_user, item):
@@ -196,19 +207,28 @@ def test_edit_item_failure(mock_emb, client, logged_user, item):
 # ------------------------------------------
 def test_delete_item_unauthorized(client, logged_user, item, app):
 
-    other = User(
-        email="del@colby.edu",
-        password="x",
-        first_name="D",
-        last_name="L",
+    u = User(
+        email="edit@colby.edu",
+        password=generate_password_hash("x"),
+        first_name="E",
+        last_name="T",
         is_verified=True,
     )
-    db.session.add(other)
+    db.session.add(u)
     db.session.commit()
 
-    client.post("/auth/login", data={"email": "del@colby.edu", "password": "x"})
+    # Re-fetch item to ensure it's not stale after other user login
+    item_id = item.id
+    db.session.expire_all()
+    item = db.session.get(Item, item_id)
+
+    client.post(
+        "/auth/login",
+        data={"email": "edit@colby.edu", "password": "x"},
+        follow_redirects=True,
+    )
     resp = client.post(f"/delete_item/{item.id}", follow_redirects=True)
-    assert b"Unauthorized" in resp.data
+    assert b"Unauthorized" in resp.data or b"unauthorized" in resp.data.lower()
 
 
 def test_delete_item_404(client, logged_user):
@@ -235,18 +255,23 @@ def test_post_item_missing_price(client, logged_user):
     assert b"Price is required" in resp.data
 
 
-def test_update_profile_with_image(client, logged_user):
+def test_update_profile_with_image(client, logged_user, app):
     """Cover the profile image upload logic."""
     data = {
         "first_name": "New",
         "last_name": "Name",
-        "profile_image": (io.BytesIO(b"fake image data"), "test.png"),
+        "uploaded_image_filename": "test_profile.png",
     }
     resp = client.post(
         "/update_profile",
         data=data,
-        content_type="multipart/form-data",
         follow_redirects=True,
     )
     assert resp.status_code == 200
-    assert logged_user.profile_image is not None
+    with app.app_context():
+        db.session.commit()
+        # Explicitly expire to force re-fetch from DB
+        db.session.expire_all()
+        u = db.session.get(User, logged_user.id)
+        assert u.profile_image is not None
+        assert u.profile_image == "test_profile.png"

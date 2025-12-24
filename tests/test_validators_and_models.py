@@ -154,8 +154,16 @@ def test_semantic_search_branches(app, sample_item):
         results = Item.semantic_search(None)
         assert len(results) >= 1
 
-        sample_item.embedding = None
+        si = db.session.get(Item, sample_item.id)
+        # First test semantic search with the item present
+        sem = Item.semantic_search("technology", limit=5)
+        assert any(si.id == item.id for item in sem)
+
+        # Then test after removing embedding
+        si.embedding = None
         db.session.commit()
+        db.session.expire_all()
+
         results = Item.semantic_search("technology")
         assert results == []
 
