@@ -14,7 +14,7 @@ from .responses import (
     error_response,
     require_api_auth,
     serialize_user,
-    serialize_item
+    serialize_item,
 )
 
 # File upload configuration
@@ -52,12 +52,11 @@ def save_profile_image(file, user_id):
 
 # Route registration
 
+
 def register_routes(api):
     """Register users routes to the API blueprint."""
 
-
     # Public user endpoints
-
 
     @api.route("/users/<int:user_id>", methods=["GET"])
     def get_user(user_id):
@@ -106,18 +105,14 @@ def register_routes(api):
             message="User listings retrieved successfully",
         )
 
-
     # Authenticated user endpoints
-
 
     @api.route("/users/me", methods=["GET"])
     @require_api_auth
     def get_current_user_profile():
         """Get current authenticated user's profile."""
         return success_response(
-            data=serialize_user(
-                current_user, include_email=True, include_stats=True
-            ),
+            data=serialize_user(current_user, include_email=True, include_stats=True),
             message="Current user profile retrieved successfully",
         )
 
@@ -160,9 +155,7 @@ def register_routes(api):
         db.session.commit()
 
         return success_response(
-            data=serialize_user(
-                current_user, include_email=True, include_stats=True
-            ),
+            data=serialize_user(current_user, include_email=True, include_stats=True),
             message="Profile updated successfully",
         )
 
@@ -243,8 +236,7 @@ def register_routes(api):
         limit = min(max(limit, 1), 50)
 
         views = (
-            current_user.viewed_history
-            .order_by(RecentlyViewed.viewed_at.desc())
+            current_user.viewed_history.order_by(RecentlyViewed.viewed_at.desc())
             .limit(limit)
             .all()
         )
@@ -254,9 +246,9 @@ def register_routes(api):
                 "recently_viewed": [
                     {
                         "item": serialize_item(view.item),
-                        "viewed_at": view.viewed_at.isoformat()
-                        if view.viewed_at
-                        else None,
+                        "viewed_at": (
+                            view.viewed_at.isoformat() if view.viewed_at else None
+                        ),
                     }
                     for view in views
                 ]
@@ -272,25 +264,21 @@ def register_routes(api):
             seller_id=current_user.id, is_active=True
         ).count()
 
-        listings_total = Item.query.filter_by(
-            seller_id=current_user.id
-        ).count()
+        listings_total = Item.query.filter_by(seller_id=current_user.id).count()
 
-        orders_as_buyer = Order.query.filter_by(
-            buyer_id=current_user.id
-        ).count()
+        orders_as_buyer = Order.query.filter_by(buyer_id=current_user.id).count()
 
         orders_as_seller = (
-            Order.query.join(Item)
-            .filter(Item.seller_id == current_user.id)
-            .count()
+            Order.query.join(Item).filter(Item.seller_id == current_user.id).count()
         )
 
         return success_response(
             data={
-                "account_created": current_user.created_at.isoformat()
-                if current_user.created_at
-                else None,
+                "account_created": (
+                    current_user.created_at.isoformat()
+                    if current_user.created_at
+                    else None
+                ),
                 "is_verified": current_user.is_verified,
                 "listings": {
                     "active": listings_active,

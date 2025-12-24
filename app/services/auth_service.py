@@ -17,7 +17,10 @@ def create_user(first_name, last_name, email, password):
         return None, "An account with that email already exists."
 
     if not is_strong_password(password):
-        return None, "Password must be at least 12 characters and include letters and numbers."
+        return (
+            None,
+            "Password must be at least 12 characters and include letters and numbers.",
+        )
 
     hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
 

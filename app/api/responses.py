@@ -10,6 +10,7 @@ from flask_login import current_user
 
 # Standard Responses
 
+
 def success_response(data=None, message="Success", status_code=200):
     """
     Create a standardized success response.
@@ -39,11 +40,13 @@ def error_response(message="An error occurred", status_code=400, errors=None):
 
 # Authentication Decorators
 
+
 def require_api_auth(f):
     """
     Require an authenticated user for API access.
     Uses Flask-Login session authentication.
     """
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated:
@@ -65,6 +68,7 @@ def validate_json(*required_fields):
         def login():
             ...
     """
+
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
@@ -86,7 +90,9 @@ def validate_json(*required_fields):
                 return error_response(
                     message=f"Missing required fields: {', '.join(missing_fields)}",
                     status_code=400,
-                    errors={field: "This field is required" for field in missing_fields},
+                    errors={
+                        field: "This field is required" for field in missing_fields
+                    },
                 )
 
             return f(*args, **kwargs)
@@ -97,6 +103,7 @@ def validate_json(*required_fields):
 
 
 # Serialization Helpers
+
 
 def serialize_user(user, include_email=False):
     """
@@ -134,10 +141,14 @@ def serialize_item(item):
         "image_url": item.image_url,
         "created_at": item.created_at.isoformat() if item.created_at else None,
         "seller_id": item.seller_id,
-        "seller": {
-            "id": item.seller.id,
-            "name": item.seller.full_name,
-        } if item.seller else None,
+        "seller": (
+            {
+                "id": item.seller.id,
+                "name": item.seller.full_name,
+            }
+            if item.seller
+            else None
+        ),
         "is_active": item.is_active,
     }
 

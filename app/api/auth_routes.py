@@ -42,9 +42,7 @@ def register_routes(api):
         if error:
             return error_response(error, 400)
 
-        return success_response(
-            message="Account created. Please verify your email."
-        )
+        return success_response(message="Account created. Please verify your email.")
 
     @api.route("/auth/login", methods=["POST"])
     def api_login():
@@ -60,9 +58,7 @@ def register_routes(api):
 
         login_user(user)
 
-        return success_response(
-            message="Login successful"
-        )
+        return success_response(message="Login successful")
 
     @api.route("/auth/logout", methods=["POST"])
     @require_api_auth
@@ -80,9 +76,7 @@ def register_routes(api):
         if not success:
             return error_response("No account found with that email", 404)
 
-        return success_response(
-            message="Password reset instructions sent"
-        )
+        return success_response(message="Password reset instructions sent")
 
     @api.route("/auth/reset-password", methods=["POST"])
     def api_reset_password():

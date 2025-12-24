@@ -82,7 +82,7 @@ def create_app():
     app.register_blueprint(auth, url_prefix="/auth")
     app.register_blueprint(main)
     app.register_blueprint(api, url_prefix="/api")
-    
+
     # Register REST API blueprint
     api_bp = create_api_blueprint()
     app.register_blueprint(api_bp)

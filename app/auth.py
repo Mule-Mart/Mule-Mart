@@ -24,6 +24,7 @@ import os
 # blueprint for authenticaiton routes
 auth = Blueprint("auth", __name__)
 
+
 # ---------- SIGNUP ----------
 @auth.route("/signup", methods=["GET", "POST"])
 def signup():
@@ -44,11 +45,12 @@ def signup():
             flash(error, "danger")
             return redirect(url_for("auth.signup"))
 
-        flash("Account created! Please check your email to verify your account.", "info")
+        flash(
+            "Account created! Please check your email to verify your account.", "info"
+        )
         return redirect(url_for("auth.login"))
 
     return render_template("signup.html")
-
 
 
 # ---------- LOGIN ----------
@@ -73,7 +75,6 @@ def login():
         return redirect(url_for("main.home"))
 
     return render_template("login.html")
-
 
 
 # ---------- LOGOUT ----------
@@ -103,7 +104,6 @@ def forgot_password():
     return render_template("forgot_password.html")
 
 
-
 # ---------- RESET PASSWORD ----------
 @auth.route("/reset-password/<token>", methods=["GET", "POST"])
 def reset_password(token):
@@ -127,7 +127,6 @@ def reset_password(token):
     return render_template("reset_password.html", token=token)
 
 
-
 # ---------- EMAIL VERIFICATION ----------
 @auth.route("/verify/<token>")
 def verify_email(token):
@@ -139,7 +138,6 @@ def verify_email(token):
 
     flash("Your email has been verified! You can now log in.", "success")
     return redirect(url_for("auth.login"))
-
 
 
 # ---------- GOOGLE LOGIN ----------

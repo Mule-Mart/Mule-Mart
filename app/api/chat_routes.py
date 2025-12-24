@@ -76,9 +76,9 @@ def register_routes(api):
             conversations.append(
                 {
                     "user": serialize_user(user),
-                    "last_message": serialize_chat_message(last_message)
-                    if last_message
-                    else None,
+                    "last_message": (
+                        serialize_chat_message(last_message) if last_message else None
+                    ),
                     "unread_count": unread_count,
                 }
             )
@@ -109,10 +109,8 @@ def register_routes(api):
 
         query = Chat.query.filter(
             or_(
-                (Chat.sender_id == current_user.id)
-                & (Chat.receiver_id == user_id),
-                (Chat.sender_id == user_id)
-                & (Chat.receiver_id == current_user.id),
+                (Chat.sender_id == current_user.id) & (Chat.receiver_id == user_id),
+                (Chat.sender_id == user_id) & (Chat.receiver_id == current_user.id),
             )
         )
 
