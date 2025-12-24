@@ -51,14 +51,38 @@ def mock_embeddings(monkeypatch):
     Globally mock generate_embedding to avoid loading SentenceTransformer.
     Returns a simple fixed vector when text is non-empty.
     """
-    import app.search_utils as su
+    import sys
+
+    # Ensure modules are loaded
+    import app.search_utils
+    import app.models
+    import app.main
 
     def fake_generate_embedding(text):
         if not text:
             return None
         return [0.1, 0.2, 0.3]
 
-    monkeypatch.setattr(su, "generate_embedding", fake_generate_embedding)
+    monkeypatch.setattr(
+        sys.modules["app.search_utils"], "generate_embedding", fake_generate_embedding
+    )
+    monkeypatch.setattr(
+        sys.modules["app.models"], "generate_embedding", fake_generate_embedding
+    )
+    monkeypatch.setattr(
+        sys.modules["app.main"], "generate_embedding", fake_generate_embedding
+    )
+
+    # Also mock cosine_similarity just in case
+    def fake_cosine_similarity(v1, v2):
+        return 1.0 if v1 == v2 else 0.0
+
+    monkeypatch.setattr(
+        sys.modules["app.search_utils"], "cosine_similarity", fake_cosine_similarity
+    )
+    monkeypatch.setattr(
+        sys.modules["app.models"], "cosine_similarity", fake_cosine_similarity
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -142,6 +166,10 @@ def cleanup(app):
     """
     Clean up the database after each test.
     """
+    with app.app_context():
+        db.session.remove()
+        db.drop_all()
+        db.create_all()
     yield
     with app.app_context():
         db.session.remove()
