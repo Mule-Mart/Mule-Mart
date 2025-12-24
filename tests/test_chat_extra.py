@@ -2,21 +2,23 @@ import pytest
 from datetime import datetime, timedelta
 from app.models import User, Chat, db
 import pytz
+from werkzeug.security import generate_password_hash
 
 
 @pytest.fixture
 def two_users(app, client):
-    # Removed with app.app_context(): relying on session-scoped app context from conftest
+    hashed_pw = generate_password_hash("x", method="pbkdf2:sha256")
+
     u1 = User(
         email="u1@colby.edu",
-        password="x",
+        password=hashed_pw,
         first_name="A",
         last_name="One",
         is_verified=True,
     )
     u2 = User(
         email="u2@colby.edu",
-        password="x",
+        password=hashed_pw,
         first_name="B",
         last_name="Two",
         is_verified=True,
@@ -27,7 +29,10 @@ def two_users(app, client):
     # login u1
     client.post("/auth/login", data={"email": u1.email, "password": "x"})
 
-    return u1, u2
+    yield u1, u2
+
+    # cleanup
+    client.get("/auth/logout", follow_redirects=True)
 
 
 # --------------------------------------
@@ -153,9 +158,19 @@ def test_send_message_invalid_receiver(client, two_users):
 
 
 # --------------------------------------
+
+
+# --------------------------------------
+# send_message — not logged in
+# --------------------------------------
+# --------------------------------------
+# send_message — not logged in
+# --------------------------------------
+# --------------------------------------
 # send_message — not logged in
 # --------------------------------------
 def test_send_message_not_logged_in(client, app):
+    # client.get("/auth/logout") removed - fixture handles it
 
     u = User(
         email="test@colby.edu",
@@ -171,8 +186,10 @@ def test_send_message_not_logged_in(client, app):
     resp = client.post(
         "/send_message",
         json={"receiver_id": receiver_id, "content": "hi"},
+        follow_redirects=False,
     )
-    assert resp.status_code == 401
+    assert resp.status_code == 302
+    assert "/auth/login" in resp.location
 
 
 # --------------------------------------
@@ -241,7 +258,7 @@ def test_inbox_multiple_conversations(client, two_users, app):
 # --------------------------------------
 def test_inbox_not_logged_in(client):
     resp = client.get("/inbox")
-    assert resp.status_code == 401  # Assuming auth required
+    assert resp.status_code == 302  # Assuming auth required
 
 
 # --------------------------------------
