@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 def test_item_image_put_url(client, logged_in_user):
     """
-    Test POST /api/v1/item/image-upload-url
+    Test POST /api/v1/items/item-image-url
     Should return putUrl and newFilename.
     """
     # Access the real app object to mock the S3 client
@@ -13,12 +13,12 @@ def test_item_image_put_url(client, logged_in_user):
     )
 
     response = client.post(
-        "/api/item/image-upload-url",
+        "/api/v1/items/item-image-url",
         json={"filename": "test.jpg", "contentType": "image/jpeg"},
     )
 
     assert response.status_code == 200
-    data = response.json
+    data = response.json["data"]
     assert data["putUrl"] == "https://fake-s3-url.com/put"
     assert "item_images/" in data["newFilename"]
     assert "test.jpg" in data["newFilename"]
@@ -32,7 +32,7 @@ def test_item_image_put_url(client, logged_in_user):
 
 def test_profile_image_put_url(client, logged_in_user):
     """
-    Test POST /api/profile/image-upload-url
+    Test POST /api/v1/users/me/profile-image-url
     """
     app = client.application
     app.s3_client.generate_presigned_url = MagicMock(
@@ -40,12 +40,12 @@ def test_profile_image_put_url(client, logged_in_user):
     )
 
     response = client.post(
-        "/api/profile/image-upload-url",
+        "/api/v1/users/me/profile-image-url",
         json={"filename": "mypic.png", "contentType": "image/png"},
     )
 
     assert response.status_code == 200
-    data = response.json
+    data = response.json["data"]
     assert data["putUrl"] == "https://fake-s3-url.com/profile-put"
     assert "profile_images/" in data["newFilename"]
     assert "mypic.png" in data["newFilename"]
