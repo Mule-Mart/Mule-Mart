@@ -3,13 +3,19 @@ Items API endpoints
 REST endpoints for browsing, creating, updating, and managing items
 """
 
+from app.services.storage_service import delete_file
+from app.services.storage_service import validate_item_image_upload
+from app.services.storage_service import generate_put_url
+from app.services.storage_service import ITEM_IMAGES_FOLDER
+from app.services.storage_service import generate_unique_filename
+from app.services.storage_service import is_mimetype_allowed
 from flask import request, current_app, url_for
 from flask_login import current_user
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
 
-from app.models import Item, db, RecentlyViewed, User
+from app.models import Item, db, RecentlyViewed
 from app.search_utils import generate_embedding
 from .responses import (
     success_response,
@@ -18,35 +24,6 @@ from .responses import (
     require_api_auth,
     serialize_item,
 )
-
-
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
-
-
-def allowed_file(filename):
-    """Check if file extension is allowed."""
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-def save_uploaded_file(file):
-    """Save uploaded file and return relative path."""
-    if not file or not file.filename:
-        return None
-
-    if not allowed_file(file.filename):
-        return None
-
-    filename = secure_filename(file.filename)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{timestamp}_{filename}"
-
-    upload_folder = os.path.join(current_app.static_folder, "uploads")
-    os.makedirs(upload_folder, exist_ok=True)
-
-    filepath = os.path.join(upload_folder, filename)
-    file.save(filepath)
-
-    return f"uploads/{filename}"
 
 
 def register_routes(api):
@@ -192,7 +169,7 @@ def register_routes(api):
 
         POST /api/v1/items
 
-        Request body (JSON or form data):
+        Request body (JSON):
         {
             "title": "Vintage Jacket",
             "description": "Beautiful vintage jacket...",
@@ -203,32 +180,20 @@ def register_routes(api):
             "price": 25.99
         }
 
-        Files:
-        - image: Item image file (multipart/form-data)
-
         Responses:
         - 201: Item created successfully
         - 400: Validation error
         - 401: Not authenticated
         """
-        # Handle both JSON and form data
-        if request.is_json:
-            data = request.get_json()
-            title = data.get("title", "").strip()
-            description = data.get("description", "").strip()
-            category = data.get("category", "").strip()
-            size = data.get("size", "").strip()
-            seller_type = data.get("seller_type", "").strip()
-            condition = data.get("condition", "").strip()
-            price_str = data.get("price", "")
-        else:
-            title = request.form.get("title", "").strip()
-            description = request.form.get("description", "").strip()
-            category = request.form.get("category", "").strip()
-            size = request.form.get("size", "").strip()
-            seller_type = request.form.get("seller_type", "").strip()
-            condition = request.form.get("condition", "").strip()
-            price_str = request.form.get("price", "")
+        data = request.get_json()
+        title = data.get("title", "").strip()
+        description = data.get("description", "").strip()
+        category = data.get("category", "").strip()
+        size = data.get("size", "").strip()
+        seller_type = data.get("seller_type", "").strip()
+        condition = data.get("condition", "").strip()
+        price_str = data.get("price", "")
+        uploaded_image_filename = data.get("uploaded_image_filename", "").strip()
 
         # Validation
         errors = {}
@@ -255,9 +220,27 @@ def register_routes(api):
             )
 
         # Handle image upload
-        image_url = None
-        if "image" in request.files:
-            image_url = save_uploaded_file(request.files["image"])
+        item_image = None
+        if uploaded_image_filename:
+            try:
+                is_valid, error_message = validate_item_image_upload(
+                    item_image=uploaded_image_filename
+                )
+
+                if not is_valid:
+                    current_app.logger.error(error_message)
+                    return error_response(message=error_message, status_code=400)
+
+                item_image = uploaded_image_filename
+
+            except Exception:
+                current_app.logger.exception(
+                    "There was an error validating the item image."
+                )
+                return error_response(
+                    message="There was an error creating the item. Please try again later.",
+                    status_code=500,
+                )
 
         # Create item
         new_item = Item(
@@ -268,7 +251,7 @@ def register_routes(api):
             seller_type=seller_type if seller_type else None,
             condition=condition if condition else None,
             price=price,
-            image_url=image_url,
+            item_image=item_image,
             seller_id=current_user.id,
             embedding=generate_embedding(f"{title} {description}"),
         )
@@ -284,6 +267,7 @@ def register_routes(api):
 
     @api.route("/items/<int:item_id>", methods=["PUT"])
     @require_api_auth
+    @validate_json()
     def update_item(item_id):
         """
         Update an existing item.
@@ -310,10 +294,7 @@ def register_routes(api):
             )
 
         # Get update data
-        if request.is_json:
-            data = request.get_json()
-        else:
-            data = request.form.to_dict()
+        data = request.get_json()
 
         # Update fields
         if "title" in data:
@@ -323,6 +304,12 @@ def register_routes(api):
                     message="Title cannot be empty",
                     status_code=400,
                     errors={"title": "Title is required"},
+                )
+            elif len(title) > 150:
+                return error_response(
+                    message="Title must be 150 characters or less",
+                    status_code=400,
+                    errors={"title": "Title must be 150 characters or less"},
                 )
             item.title = title
 
@@ -358,21 +345,39 @@ def register_routes(api):
             item.is_active = bool(data["is_active"])
 
         # Update image if provided
-        if "image" in request.files:
-            new_image_url = save_uploaded_file(request.files["image"])
-            if new_image_url:
-                item.image_url = new_image_url
-            else:
+        uploaded_image_filename = data.get("uploaded_image_filename", "").strip()
+        old_item_image = None
+        if uploaded_image_filename and uploaded_image_filename != item.item_image:
+            try:
+                is_valid, error_message = validate_item_image_upload(
+                    item_image=uploaded_image_filename
+                )
+                if not is_valid:
+                    current_app.logger.error(error_message)
+                    return error_response(
+                        message=error_message,
+                        status_code=400,
+                    )
+                old_item_image = item.item_image
+                item.item_image = uploaded_image_filename
+            except Exception:
+                current_app.logger.exception(
+                    "There was an error updating the item image."
+                )
                 return error_response(
-                    message="Invalid image file",
-                    status_code=400,
-                    errors={"image": "File type not allowed"},
+                    message="There was an error updating the item. Please try again later.",
+                    status_code=500,
                 )
 
         # Update embedding
         item.embedding = generate_embedding(f"{item.title} {item.description or ''}")
 
         db.session.commit()
+
+        if old_item_image and not delete_file(filename=old_item_image):
+            current_app.logger.warning(
+                f"Failed to delete old item image: `{old_item_image}`"
+            )
 
         return success_response(
             data=serialize_item(item), message="Item updated successfully"
@@ -491,3 +496,56 @@ def register_routes(api):
         ]
 
         return success_response(data=results, message="Autocomplete results retrieved")
+
+    @api.route("/items/item-image-url", methods=["POST"])
+    @require_api_auth
+    @validate_json("filename", "contentType")
+    def item_image_put_url():
+        """
+        Generates a presigned PUT URL for uploading item images to the app's default storage bucket.
+
+        POST /api/v1/items/item-image-url
+
+        Request body (JSON):
+        {
+            "filename": "Winter Jacket.png",
+            "contentType": "image/png"
+        }
+
+        Responses:
+        - 200: Item image PUT URL and new filename
+        - 400: Missing or invalid request arguments
+        - 500: Error generating item image PUT URL.
+        """
+        data = request.get_json()
+        filename = data.get("filename", "").strip()
+        content_type = data.get("contentType", "").strip()
+
+        if not filename or not content_type:
+            return error_response(
+                message="filename and contentType are required.", status_code=400
+            )
+        if not is_mimetype_allowed(content_type):
+            return error_response(
+                message=f"Unsupported contentType:`{content_type}`", status_code=400
+            )
+
+        new_filename = generate_unique_filename(
+            original_filename=filename,
+            folder=ITEM_IMAGES_FOLDER,
+            content_type=content_type,
+        )
+
+        put_url = generate_put_url(filename=new_filename, content_type=content_type)
+
+        if not put_url:
+            return error_response(
+                message="There was an error generating the item image upload URL. Please try again later.",
+                status_code=500,
+            )
+
+        return success_response(
+            message="Item image upload URL generated successfully",
+            status_code=200,
+            data={"putUrl": put_url, "newFilename": new_filename},
+        )
