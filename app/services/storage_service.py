@@ -90,7 +90,7 @@ def generate_put_url(filename: str, content_type: str) -> str | None:
 
     Returns
     -------
-    str
+    str | None
         The generated presigned PUT URL for uploading a file with the given filename and content type to the app's default storage bucket.
     """
     try:
@@ -107,6 +107,37 @@ def generate_put_url(filename: str, content_type: str) -> str | None:
     except Exception as e:
         current_app.logger.exception("Error generating presigned URL")
         return None
+
+
+def generate_get_url(filename: str)-> str | None:
+    """
+    Generates a presigned GET url for downloading a given image file from the app's default storage bucket.
+    Does not verify existence of the file for which the URL is being generated.
+
+    Params
+    ------
+    filename: str
+        The name of the file to be downloaded including the full path from the bucket root.
+    
+    Returns
+    -------
+    str | None
+        The generated presigned GET URL for downloading the file. `None` if the URL was not successfully generated
+    """
+    try:
+        get_url = current_app.s3_client.generate_presigned_url(
+            "get_object", 
+            Params={
+                "Key": filename,
+                "Bucket": current_app.s3_bucket_id,
+            },
+            ExpiresIn=3600,
+        )
+        return get_url
+    except Exception:
+        current_app.logger.exception("Error generating presigned GET URL")
+        return None
+
 
 
 def delete_file(filename: str) -> bool:

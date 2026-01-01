@@ -3,8 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from flask import current_app
 from datetime import datetime
-import pickle
 from .search_utils import generate_embedding, cosine_similarity
+from app.services.storage_service import generate_get_url
 
 db = SQLAlchemy()
 
@@ -76,22 +76,10 @@ class User(UserMixin, db.Model):
         Generates a presigned URL for making GET requests to retrieving the current user's profile picture from a cloud storage bucket.
         If user has no profile image, fall back to default profile picture.
         """
+        image_url = None
         if self.profile_image:
-            try:
-                image_url = current_app.s3_client.generate_presigned_url(
-                    "get_object",
-                    Params={
-                        "Bucket": current_app.s3_bucket_id,
-                        "Key": self.profile_image,
-                    },
-                    ExpiresIn=3600,
-                )
-                return image_url
-            except Exception as e:
-                current_app.logger.error(f"Error generating presigned URL: {e}")
-                return url_for("static", filename="images/default_user_profile.png")
-        else:
-            return url_for("static", filename="images/default_user_profile.png")
+            image_url = generate_get_url(filename=self.profile_image)
+        return image_url or url_for("static", filename="images/default_user_profile.png")
 
 
 class Item(db.Model):
@@ -177,18 +165,10 @@ class Item(db.Model):
         Generates a presigned URL for making GET requests to retrieve an image of this item.
         Falls back to default item image if item image URL could not be generated.
         """
+        image_url = None
         if self.item_image:
-            try:
-                image_url = current_app.s3_client.generate_presigned_url(
-                    "get_object",
-                    Params={"Bucket": current_app.s3_bucket_id, "Key": self.item_image},
-                    ExpiresIn=3600,
-                )
-                return image_url
-            except:
-                return url_for("static", filename="images/default_item.png")
-        else:
-            return url_for("static", filename="images/default_item.png")
+            image_url = generate_get_url(filename=self.item_image)
+        return image_url or url_for("static", filename="images/default_item.png")
 
 
 class Order(db.Model):
