@@ -73,9 +73,6 @@ def register_routes(api):
 
         success = generate_password_reset(email)
 
-        if not success:
-            return error_response("No account found with that email", 404)
-
         return success_response(message="Password reset instructions sent")
 
     @api.route("/auth/reset-password", methods=["POST"])
