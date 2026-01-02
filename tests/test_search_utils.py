@@ -59,7 +59,7 @@ def test_cosine_similarity_various():
 
 def test_generate_embedding_coverage():
     """
-    Test the actual generate_embedding function in app/search_utils.py
+    Test the actual generate_embedding function in app/utils/search_utils.py
     by reloading the module to bypass the conftest fixture that mocks it.
     """
     import app.utils.search_utils
