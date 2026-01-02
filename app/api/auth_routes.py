@@ -3,7 +3,8 @@ Auth API endpoints
 REST authentication routes
 """
 
-from flask import request
+from app.api.responses import validate_json
+from flask import request, current_app
 from flask_login import login_user, logout_user, current_user
 
 from app.services.auth_service import (
@@ -25,8 +26,9 @@ def register_routes(api):
     """Register auth routes to the API blueprint."""
 
     @api.route("/auth/signup", methods=["POST"])
+    @validate_json("first_name", "last_name", "email", "password", "confirm_password")
     def api_signup():
-        data = request.get_json() or {}
+        data = request.get_json()
 
         first_name = data.get("first_name", "").strip()
         last_name = data.get("last_name", "").strip()
@@ -34,10 +36,9 @@ def register_routes(api):
         password = data.get("password", "")
         confirm_password = data.get("confirm_password", "")
 
-        if password != confirm_password:
-            return error_response("Passwords do not match", 400)
-
-        user, error = create_user(first_name, last_name, email, password)
+        user, error = create_user(
+            first_name, last_name, email, password, confirm_password
+        )
 
         if error:
             return error_response(error, 400)
@@ -45,8 +46,9 @@ def register_routes(api):
         return success_response(message="Account created. Please verify your email.")
 
     @api.route("/auth/login", methods=["POST"])
+    @validate_json("email", "password")
     def api_login():
-        data = request.get_json() or {}
+        data = request.get_json()
 
         email = data.get("email", "").strip().lower()
         password = data.get("password", "")
@@ -67,18 +69,22 @@ def register_routes(api):
         return success_response(message="Logged out successfully")
 
     @api.route("/auth/forgot-password", methods=["POST"])
+    @validate_json("email")
     def api_forgot_password():
-        data = request.get_json() or {}
+        data = request.get_json()
         email = data.get("email", "").strip().lower()
 
         success = generate_password_reset(email)
 
+        if not success:
+            current_app.logger.error(f"No account was found with the email address `{email}`")
+
         return success_response(message="Password reset instructions sent")
 
     @api.route("/auth/reset-password", methods=["POST"])
+    @validate_json("token", "password")
     def api_reset_password():
-        data = request.get_json() or {}
-
+        data = request.get_json()
         token = data.get("token")
         new_password = data.get("password")
 
