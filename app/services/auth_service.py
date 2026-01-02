@@ -1,5 +1,6 @@
 # app/services/auth_service.py
 
+from flask.helpers import url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
 from flask import current_app
@@ -9,13 +10,16 @@ from app.utils.validators import is_strong_password
 import os
 
 
-def create_user(first_name, last_name, email, password):
+def create_user(first_name, last_name, email, password, confirm_password):
     if not email.endswith("@colby.edu"):
         return None, "Please use your Colby College email address."
 
     if User.query.filter_by(email=email).first():
         return None, "An account with that email already exists."
-
+    
+    if password != confirm_password:
+        return None, "Passwords do not match."
+    
     if not is_strong_password(password):
         return (
             None,
