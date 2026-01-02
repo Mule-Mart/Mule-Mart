@@ -3,7 +3,6 @@ Auth API endpoints
 REST authentication routes
 """
 
-from app.api.responses import validate_json
 from flask import request, current_app
 from flask_login import login_user, logout_user, current_user
 
@@ -13,12 +12,14 @@ from app.services.auth_service import (
     generate_password_reset,
     reset_password_with_token,
     verify_email_token,
+    resend_verification_email,
 )
 
 from .responses import (
     success_response,
     error_response,
     require_api_auth,
+    validate_json,
 )
 
 
@@ -77,7 +78,9 @@ def register_routes(api):
         success = generate_password_reset(email)
 
         if not success:
-            current_app.logger.error(f"No account was found with the email address `{email}`")
+            current_app.logger.error(
+                f"No account was found with the email address `{email}`"
+            )
 
         return success_response(message="Password reset instructions sent")
 
@@ -106,6 +109,22 @@ def register_routes(api):
             return error_response("Invalid or expired verification token", 400)
 
         return success_response(message="Email verified successfully")
+
+    @api.route("/auth/resend-verification", methods=["POST"])
+    @validate_json("email")
+    def api_resend_verification():
+        data = request.get_json()
+        email = data.get("email", "").strip()
+
+        if not email:
+            return error_response(message="Email cannot be empty", status_code=400)
+
+        resend_verification_email(email=email)
+
+        return success_response(
+            message=f"If an account exists with `{email}`, a verification email has been sent.",
+            status_code=200,
+        )
 
     @api.route("/auth/me", methods=["GET"])
     @require_api_auth

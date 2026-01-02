@@ -94,7 +94,7 @@ def forgot_password():
         if not success:
             current_app.logger.error(f"No account was found with the email address `{email}`")
 
-        flash(f"If an account is associated with `{email}`, you will receive an email with instructions on how to reset your password shortly.", "success")
+        flash(f"If an account exists with `{email}`, you will receive an email with instructions on how to reset your password shortly.", "success")
         return redirect(url_for("auth.login"))
 
     return render_template("forgot_password.html")

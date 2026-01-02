@@ -16,10 +16,10 @@ def create_user(first_name, last_name, email, password, confirm_password):
 
     if User.query.filter_by(email=email).first():
         return None, "An account with that email already exists."
-    
+
     if password != confirm_password:
         return None, "Passwords do not match."
-    
+
     if not is_strong_password(password):
         return (
             None,
@@ -78,6 +78,38 @@ def send_verification_email(user):
     )
 
     current_app.extensions["mail"].send(msg)
+
+
+def resend_verification_email(email: str) -> bool:
+    """
+    Resends a verification email if a user exists and is not verified.
+
+    Params
+    ------
+    email: str
+        The email address that the verification email is to be sent to.
+
+    Returns
+    -------
+    success: bool
+        `True` if the verification email was sent to the given email address. Otherwise `False`.
+    """
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        current_app.logger.warning(
+            f"Error sending verification email: user with email `{email}` does not exist."
+        )
+        return False
+
+    if user.is_verified:
+        current_app.logger.warning(
+            f"Error sending verification email: user already verified"
+        )
+        return False
+
+    send_verification_email(user)
+    return True
 
 
 def verify_email_token(token):
