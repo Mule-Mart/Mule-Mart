@@ -175,7 +175,7 @@ def test_forgot_password_unknown_email(client):
         data={"email": "nosuch@colby.edu"},
         follow_redirects=True,
     )
-    assert b"No account found" in resp.data
+    assert b"you will receive an email with instructions on how to reset your password shortly" in resp.data
 
 
 def test_forgot_password_sends_email(client, create_user):
@@ -185,12 +185,12 @@ def test_forgot_password_sends_email(client, create_user):
         data={"email": u.email},
         follow_redirects=True,
     )
-    assert b"Password reset instructions" in resp.data
+    assert b"you will receive an email with instructions on how to reset your password shortly" in resp.data
 
 
 def test_reset_password_invalid_token(client):
-    resp = client.get("/auth/reset-password/invalidtoken", follow_redirects=True)
-    assert b"invalid or has expired" in resp.data
+    resp = client.post("/auth/reset-password/invalidtoken", follow_redirects=True)
+    assert b"Invalid or expired password reset token" in resp.data
 
 
 def test_reset_password_success_flow(client, app, create_user):
@@ -208,7 +208,7 @@ def test_reset_password_success_flow(client, app, create_user):
         },
         follow_redirects=True,
     )
-    assert b"password has been reset" in resp.data
+    assert b"password has been reset successfully" in resp.data
 
 
 def test_verify_email_invalid_token(client):
@@ -255,7 +255,7 @@ def test_verify_email_already_verified(client, app):
         token = s.dumps(u.email, salt="email-verify-salt")
 
     resp = client.get(f"/auth/verify/{token}", follow_redirects=True)
-    assert b"already verified" in resp.data
+    assert b"email has been verified" in resp.data
 
 
 def test_google_login_redirects_when_not_authorized(client, monkeypatch):
