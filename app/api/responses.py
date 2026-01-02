@@ -121,7 +121,7 @@ def serialize_user(user, include_email=False, include_stats=False):
 
     if include_email:
         data["email"] = user.email
-    
+
     if include_stats:
         user_stats = get_user_activity_stats(user)
         for stat in user_stats:

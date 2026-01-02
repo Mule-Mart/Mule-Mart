@@ -175,7 +175,10 @@ def test_forgot_password_unknown_email(client):
         data={"email": "nosuch@colby.edu"},
         follow_redirects=True,
     )
-    assert b"you will receive an email with instructions on how to reset your password shortly" in resp.data
+    assert (
+        b"you will receive an email with instructions on how to reset your password shortly"
+        in resp.data
+    )
 
 
 def test_forgot_password_sends_email(client, create_user):
@@ -185,7 +188,10 @@ def test_forgot_password_sends_email(client, create_user):
         data={"email": u.email},
         follow_redirects=True,
     )
-    assert b"you will receive an email with instructions on how to reset your password shortly" in resp.data
+    assert (
+        b"you will receive an email with instructions on how to reset your password shortly"
+        in resp.data
+    )
 
 
 def test_reset_password_invalid_token(client):
