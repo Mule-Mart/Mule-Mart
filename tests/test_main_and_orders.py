@@ -291,7 +291,7 @@ def test_delete_item(client, logged_in_user, app):
     with app.app_context():
         item = db.session.get(Item, item_id)
         assert item.is_deleted
- 
+
 
 def test_place_order_get(client, logged_in_user, sample_item):
     resp = client.get(f"/order/{sample_item.id}")
