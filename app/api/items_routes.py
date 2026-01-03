@@ -64,7 +64,7 @@ def register_routes(api):
             per_page = 20
 
         # Build query
-        query = Item.query.filter_by(is_active=True)
+        query = Item.query.filter_by(is_active=True, is_deleted=False)
 
         # Apply search filter
         if search:
@@ -139,7 +139,7 @@ def register_routes(api):
         """
         item = Item.query.get(item_id)
 
-        if not item or not item.is_active:
+        if not item or item.is_deleted or not item.is_active:
             return error_response(message="Item not found", status_code=404)
 
         # Track recently viewed (if authenticated)
@@ -284,7 +284,7 @@ def register_routes(api):
         """
         item = Item.query.get(item_id)
 
-        if not item:
+        if not item or item.is_deleted:
             return error_response(message="Item not found", status_code=404)
 
         # Check authorization
@@ -432,7 +432,7 @@ def register_routes(api):
         """
         item = Item.query.get(item_id)
 
-        if not item or not item.is_active:
+        if not item or item.is_deleted or not item.is_active:
             return error_response(message="Item not found", status_code=404)
 
         if not current_user.favorites.filter_by(id=item.id).first():
@@ -488,7 +488,7 @@ def register_routes(api):
             return success_response(data=[], message="No query provided")
 
         items = (
-            Item.query.filter_by(is_active=True)
+            Item.query.filter_by(is_active=True, is_deleted=False)
             .filter(Item.title.ilike(f"%{query}%"))
             .order_by(Item.created_at.desc())
             .limit(limit)

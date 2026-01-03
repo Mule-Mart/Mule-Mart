@@ -103,7 +103,7 @@ def register_routes(api):
         data = request.get_json()
 
         item = Item.query.get(data["item_id"])
-        if not item or not item.is_active:
+        if not item or item.is_deleted or not item.is_active:
             return error_response("Item not available", 404)
 
         if item.seller_id == current_user.id:
