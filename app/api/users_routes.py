@@ -61,7 +61,9 @@ def register_routes(api):
         page = max(request.args.get("page", 1, type=int), 1)
         per_page = min(max(request.args.get("per_page", 20, type=int), 1), 100)
 
-        query = Item.query.filter_by(seller_id=user_id, is_active=True)
+        query = Item.query.filter_by(
+            seller_id=user_id, is_active=True, is_deleted=False
+        )
         total = query.count()
 
         items = (
@@ -174,7 +176,7 @@ def register_routes(api):
         page = max(request.args.get("page", 1, type=int), 1)
         per_page = min(max(request.args.get("per_page", 20, type=int), 1), 100)
 
-        query = Item.query.filter_by(seller_id=current_user.id)
+        query = Item.query.filter_by(seller_id=current_user.id, is_deleted=False)
 
         if search:
             for term in search.split():
@@ -210,7 +212,7 @@ def register_routes(api):
         page = max(request.args.get("page", 1, type=int), 1)
         per_page = min(max(request.args.get("per_page", 20, type=int), 1), 100)
 
-        query = current_user.favorites
+        query = current_user.favorites.filter_by(is_deleted=False)
         total = query.count()
 
         items = (
@@ -243,7 +245,9 @@ def register_routes(api):
         limit = min(max(limit, 1), 50)
 
         views = (
-            current_user.viewed_history.order_by(RecentlyViewed.viewed_at.desc())
+            current_user.viewed_history.join(Item)
+            .filter(Item.is_deleted == False)
+            .order_by(RecentlyViewed.viewed_at.desc())
             .limit(limit)
             .all()
         )

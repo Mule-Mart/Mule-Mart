@@ -15,8 +15,7 @@ from .models import Item, db, User, Order, Chat, RecentlyViewed
 from sqlalchemy import or_
 import pytz
 from app.utils.search_utils import generate_embedding
-import os
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_mail import Message
 
 # Create a new blueprint for main pages
@@ -42,7 +41,7 @@ def home():
     categories = ["electronics", "clothing", "furniture", "books", "miscellaneous"]
 
     category_items = [
-        Item.query.filter_by(category=category, is_active=True)
+        Item.query.filter_by(category=category, is_active=True, is_deleted=False)
         .order_by(Item.created_at.desc())
         .first()
         for category in categories
@@ -74,28 +73,15 @@ def buy_item():
     search = request.args.get("search", type=str)
     sort_by = request.args.get("sort_by", default="newest", type=str)
 
-    # We'll use a base query first
-    query = Item.query.filter_by(is_active=True)
-
-    # If search provided, we might need semantic search
-    # BUT semantic_search returns a list, not a query object.
-    # To combine with other filters (category, etc), we might need a hybrid approach
-    # OR helper method. For now, let's keep it simple:
-    # If search is present, we get IDs from semantic search and filter by them.
+    query = Item.query.filter_by(is_active=True, is_deleted=False)
 
     if search:
-        semantic_results = Item.semantic_search(search, limit=50)  # Get top 50 relevant
+        semantic_results = Item.semantic_search(search, limit=50)
         if not semantic_results:
-            # If no semantic results, maybe fall back to empty or keep broad?
-            # Let's result in empty
             query = query.filter(db.false())
         else:
             relevant_ids = [item.id for item in semantic_results]
             query = query.filter(Item.id.in_(relevant_ids))
-
-            # Preserve semantic order if possible?
-            # SQL "IN" doesn't preserve order.
-            # We will sort by created_at etc below anyway unless specific sort requested.
 
     if categories_selected:
         query = query.filter(Item.category.in_(categories_selected))
@@ -215,7 +201,15 @@ def post_item():
 @main.route("/item/<int:item_id>")
 @login_required
 def item_details(item_id):
-    item = Item.query.get_or_404(item_id)
+    item = Item.query.filter_by(id=item_id, is_deleted=False).first()
+
+    if not item:
+        flash(message="Item not found", category="danger")
+        return redirect(url_for("main.buy_item"))
+
+    if not item.is_active and current_user.id != item.seller_id:
+        flash(message="Item not found", category="danger")
+        return redirect(url_for("main.buy_item"))
 
     # --- Recently Viewed (Upsert Logic) ---
     if current_user.is_authenticated:
@@ -224,7 +218,7 @@ def item_details(item_id):
         ).first()
 
         if existing_view:
-            existing_view.viewed_at = datetime.utcnow()
+            existing_view.viewed_at = datetime.now(tz=timezone.utc)
         else:
             new_view = RecentlyViewed(user_id=current_user.id, item_id=item.id)
             db.session.add(new_view)
@@ -251,7 +245,7 @@ def my_listings():
     search = request.args.get("search", "").strip()
 
     # Filter items posted by current seller
-    query = Item.query.filter_by(seller_id=current_user.id)
+    query = Item.query.filter_by(seller_id=current_user.id, is_deleted=False)
 
     # Apply multi-term search
     if search:
@@ -285,32 +279,90 @@ def my_listings():
     )
 
 
-@main.route("/handle_order/<int:order_id>/<action>", methods=["POST"])
+@main.route("/orders/<int:order_id>/approve", methods=["POST"])
 @login_required
-def handle_order(order_id, action):
-    """Approve or Reject an order."""
+def approve_order(order_id):
     order = Order.query.get_or_404(order_id)
 
-    # Security check: Ensure current user is the seller of the item
     if order.item.seller_id != current_user.id:
-        flash("You are not authorized to manage this order.", "danger")
+        flash("You are not allowed to approve this order.", "danger")
         return redirect(url_for("main.my_listings"))
 
-    if action == "approve":
-        order.status = "approved"
-        flash(f"Order for {order.item.title} approved!", "success")
-    elif action == "reject":
-        order.status = "rejected"
-        flash(f"Order for {order.item.title} rejected.", "secondary")
+    if order.status != "pending":
+        flash("This order cannot be approved.", "warning")
+        return redirect(url_for("main.my_listings"))
 
-    db.session.commit()
+    if not order.item.is_active or order.item.is_deleted:
+        flash("Item no longer available", "warning")
+        return redirect(url_for("main.my_listings"))
+
+    try:
+        order.status = "approved"
+        order.item.is_active = False
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Error approving order")
+        flash("An error occurred while approving the order. Please try again later.")
+        return redirect(url_for("main.my_listings"))
+
+    flash("Order has been approved. The buyer can now pick up the item.", "success")
     return redirect(url_for("main.my_listings"))
+
+
+@main.route("/orders/<int:order_id>/reject", methods=["POST"])
+@login_required
+def reject_order(order_id):
+    order = Order.query.get_or_404(order_id)
+
+    if order.item.seller_id != current_user.id:
+        flash("You are not allowed to reject this order.", "danger")
+        return redirect(url_for("main.my_listings"))
+
+    if order.status != "pending":
+        flash("This order cannot be rejected.", "warning")
+        return redirect(url_for("main.my_listings"))
+
+    try:
+        order.status = "rejected"
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Error rejecting order")
+        flash("An error occurred while rejecting the order. Please try again later.")
+        return redirect(url_for("main.my_listings"))
+
+    flash("Order has been rejected.", "success")
+    return redirect(url_for("main.my_listings"))
+
+
+@main.route("/mark_sold/<int:order_id>", methods=["POST"])
+@login_required
+def mark_sold(order_id):
+    order = Order.query.get_or_404(order_id)
+
+    # Only seller can mark as sold
+    if order.item.seller_id != current_user.id:
+        abort(403)
+
+    # Only approved orders can be marked as sold
+    if order.status != "approved":
+        return jsonify({"success": False, "message": "Order cannot be marked as sold."})
+
+    order.status = "completed"
+    db.session.commit()
+
+    return jsonify({"success": True})
 
 
 @main.route("/edit_item/<int:item_id>", methods=["GET", "POST"])
 @login_required
 def edit_item(item_id):
-    item = Item.query.get_or_404(item_id)
+    item = Item.query.filter_by(id=item_id, is_deleted=False).first()
+
+    if not item:
+        flash("Item not found.")
+        return redirect(url_for("main.my_listings"))
 
     if item.seller_id != current_user.id:
         flash("Unauthorized action.", "danger")
@@ -366,25 +418,53 @@ def edit_item(item_id):
 @login_required
 def delete_item(item_id):
     item = Item.query.get_or_404(item_id)
+
     if item.seller_id != current_user.id:
         flash("Unauthorized action.", "danger")
         return redirect(url_for("main.my_listings"))
-    db.session.delete(item)
-    db.session.commit()
-    flash("Item deleted successfully.", "success")
+
+    active_orders = Order.query.filter(
+        Order.item_id == item_id, Order.status.in_(["pending", "approved"])
+    ).all()
+
+    if active_orders:
+        flash("Item is involved in an active order and cannot be deleted")
+        return redirect(url_for("main.my_listings"))
+
+    try:
+        item.is_deleted = True
+        item.is_active = False
+        db.session.commit()
+        flash("Item deleted successfully.", "success")
+    except Exception:
+        current_app.logger.exception("Error deleting item")
+        db.session.rollback()
+        flash("There was an error deleting the item. Please try again later.")
+
     return redirect(url_for("main.my_listings"))
 
 
 @main.route("/order/<int:item_id>", methods=["GET"])
 @login_required
 def place_order(item_id):
-    item = Item.query.get_or_404(item_id)
+    item = Item.query.filter_by(id=item_id, is_deleted=False).first()
+
+    if not item:
+        flash("Item not found")
+        return redirect(url_for("main.buy_item"))
+
     return render_template("order_page.html", item=item)
 
 
 @main.route("/order/<int:item_id>", methods=["POST"])
 @login_required
 def create_order(item_id):
+
+    item = Item.query.filter_by(id=item_id, is_deleted=False).first()
+
+    if not item:
+        flash("Item not found")
+        return redirect(url_for("main.buy_item"))
 
     # Get form fields
     location = request.form.get("location")
@@ -469,9 +549,9 @@ def confirm_order(order_id):
 @login_required
 def favorites():
     fav_items = (
-        current_user.favorites.all()
+        current_user.favorites.filter_by(is_deleted=False).all()
         if hasattr(current_user.favorites, "all")
-        else list(current_user.favorites)
+        else [item for item in current_user.favorites if not item.is_deleted]
     )
     return render_template("favorites.html", favorites=fav_items)
 
@@ -479,22 +559,34 @@ def favorites():
 @main.route("/favorites/add/<int:item_id>", methods=["POST"])
 @login_required
 def add_favorite(item_id):
-    item = Item.query.get_or_404(item_id)
+    item = Item.query.filter_by(id=item_id, is_deleted=False).first()
+
+    if not item:
+        flash("Item not found")
+        return redirect(url_for("main.favorites"))
+
     if not current_user.favorites.filter_by(id=item.id).first():
         current_user.favorites.append(item)
         db.session.commit()
         flash("Added to favorites", "success")
+
     return redirect(request.referrer or url_for("main.favorites"))
 
 
 @main.route("/favorites/remove/<int:item_id>")
 @login_required
 def remove_favorite(item_id):
-    item = Item.query.get_or_404(item_id)
+    item = Item.query.filter_by(id=item_id, is_deleted=False).first()
+
+    if not item:
+        flash("Item not found")
+        return redirect(url_for("main.favorites"))
+
     if current_user.favorites.filter_by(id=item.id).first():
         current_user.favorites.remove(item)
         db.session.commit()
         flash("Removed from favorites", "success")
+
     return redirect(request.referrer or url_for("main.favorites"))
 
 
@@ -511,7 +603,8 @@ def autocomplete():
 
     # Get up to 8 matching items
     items = (
-        Item.query.filter(Item.title.ilike(f"%{query}%"))
+        Item.query.filter_by(is_deleted=False)
+        .filter(Item.title.ilike(f"%{query}%"))
         .order_by(Item.created_at.desc())
         .limit(8)
         .all()
@@ -663,9 +756,9 @@ def profile():
     # Safe check for favorites
     try:
         favorites = (
-            current_user.favorites.all()
+            current_user.favorites.filter_by(is_deleted=False).all()
             if hasattr(current_user.favorites, "all")
-            else list(current_user.favorites)
+            else [item for item in current_user.favorites if not item.is_deleted]
         )
     except:
         favorites = []
@@ -679,18 +772,16 @@ def profile():
     )
 
     # Listings posted by this user
-    listings = Item.query.filter_by(seller_id=current_user.id).all()
+    listings = Item.query.filter_by(seller_id=current_user.id, is_deleted=False).all()
 
     # Convert item IDs -> real Item objects
     # Recently Viewed Items (from relation)
     recent_items = []
     if current_user.is_authenticated:
-        views = (
-            current_user.viewed_history.order_by(RecentlyViewed.viewed_at.desc())
-            .limit(5)
-            .all()
-        )
-        recent_items = [v.item for v in views]
+        views = current_user.viewed_history.order_by(
+            RecentlyViewed.viewed_at.desc()
+        ).all()
+        recent_items = [v.item for v in views if not v.item.is_deleted][:5]
 
     return render_template(
         "profile.html",
@@ -719,45 +810,3 @@ def update_profile():
         current_user.profile_image = uploaded_image_filename
     db.session.commit()
     return redirect(url_for("main.profile"))
-
-
-@main.route("/approve_pickup/<int:order_id>", methods=["POST"])
-@login_required
-def approve_pickup(order_id):
-    order = Order.query.get_or_404(order_id)
-
-    # Security → only the seller of the item can approve
-    if order.item.seller_id != current_user.id:
-        flash("You are not allowed to approve this order.", "danger")
-        return redirect(url_for("main.my_listings"))
-
-    if order.status != "pending":
-        flash("This order cannot be approved.", "warning")
-        return redirect(url_for("main.my_listings"))
-
-    # Change state to approved
-    order.status = "approved"
-    order.item.is_active = False
-    db.session.commit()
-
-    flash("Pickup approved! The buyer can now pick up the item.", "success")
-    return redirect(url_for("main.my_listings"))
-
-
-@main.route("/mark_sold/<int:order_id>", methods=["POST"])
-@login_required
-def mark_sold(order_id):
-    order = Order.query.get_or_404(order_id)
-
-    # Only seller can mark as sold
-    if order.item.seller_id != current_user.id:
-        abort(403)
-
-    # Only approved orders can be marked as sold
-    if order.status != "approved":
-        return jsonify({"success": False, "message": "Order cannot be marked as sold."})
-
-    order.status = "completed"
-    db.session.commit()
-
-    return jsonify({"success": True})

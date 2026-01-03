@@ -109,7 +109,7 @@ def test_post_item_embedding_failure(mock_emb, client, logged_user):
 # ------------------------------------------
 def test_item_404(client, logged_user):
     resp = client.get("/item/999999", follow_redirects=True)
-    assert resp.status_code == 404
+    assert b"Item not found" in resp.data
 
 
 # ------------------------------------------
@@ -140,13 +140,8 @@ def order(app, logged_user, item):
     return o
 
 
-def test_handle_order_invalid_action(client, logged_user, order):
-    resp = client.post(f"/handle_order/{order.id}/invalid", follow_redirects=True)
-    assert resp.status_code == 200
-
-
-def test_handle_order_404(client, logged_user):
-    resp = client.post("/handle_order/999999/approve")
+def test_approve_order_404(client, logged_user):
+    resp = client.post("/orders/999999/approve")
     assert resp.status_code == 404
 
 
