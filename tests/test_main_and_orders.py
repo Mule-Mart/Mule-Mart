@@ -155,58 +155,91 @@ def test_my_listings_search(client, logged_in_user, app):
     assert b"Blue Shoes" not in resp.data
 
 
-def test_handle_order_approve_and_reject(client, logged_in_user, sample_item, app):
-    # Setup: Assign the logged-in user as the seller and create a pending order
+def test_approve_order_authorized(client, logged_in_user, sample_item, app):
     with app.app_context():
+        # Make logged_in_user the seller
         sample_item.seller_id = logged_in_user.id
         order = Order(
             buyer_id=logged_in_user.id,
             item_id=sample_item.id,
-            location="Somewhere",
+            location="loc",
             status="pending",
         )
         db.session.add(order)
         db.session.commit()
-        order_id = order.id
+        oid = order.id
 
-    # Approve
-    resp = client.post(f"/handle_order/{order_id}/approve", follow_redirects=True)
-    assert resp.status_code == 200
-    assert b"approved!" in resp.data or b"Pickup approved" in resp.data
+    resp = client.post(f"/orders/{oid}/approve", follow_redirects=True)
+    assert b"has been approved" in resp.data
 
     with app.app_context():
-        order = db.session.get(Order, order_id)
+        order = db.session.get(Order, oid)
         assert order.status == "approved"
-
-    # Reject
-    resp2 = client.post(f"/handle_order/{order_id}/reject", follow_redirects=True)
-    assert resp2.status_code == 200
-    assert b"rejected" in resp2.data
-
-    with app.app_context():
-        order = db.session.get(Order, order_id)
-        assert order.status == "rejected"
+        assert order.item.is_active is False
 
 
-def test_handle_order_unauthorized(
+def test_approve_order_unauthorized(
     client, logged_in_user, sample_item, app, create_user
 ):
-    # Setup: Create another user to act as the unauthorized seller
-    seller, _ = create_user(email="other_seller@colby.edu")
+    # Setup: Assign a different user as the item seller
+    seller, _ = create_user(email="other_seller2@colby.edu")
     with app.app_context():
         sample_item.seller_id = seller.id
         order = Order(
             buyer_id=logged_in_user.id,
             item_id=sample_item.id,
-            location="Somewhere",
+            location="loc",
             status="pending",
         )
         db.session.add(order)
         db.session.commit()
-        order_id = order.id
+        oid = order.id
 
-    resp = client.post(f"/handle_order/{order_id}/approve", follow_redirects=True)
-    assert b"not authorized" in resp.data.lower()
+    resp = client.post(f"/orders/{oid}/approve", follow_redirects=True)
+    assert b"not allowed to approve" in resp.data.lower()
+
+
+def test_reject_order_authorized(client, logged_in_user, sample_item, app):
+    with app.app_context():
+        # Make logged_in_user the seller
+        sample_item.seller_id = logged_in_user.id
+        order = Order(
+            buyer_id=logged_in_user.id,
+            item_id=sample_item.id,
+            location="loc",
+            status="pending",
+        )
+        db.session.add(order)
+        db.session.commit()
+        oid = order.id
+
+    resp = client.post(f"/orders/{oid}/reject", follow_redirects=True)
+    assert b"has been rejected" in resp.data
+
+    with app.app_context():
+        order = db.session.get(Order, oid)
+        assert order.status == "rejected"
+
+
+def test_reject_order_unauthorized(
+    client, logged_in_user, sample_item, app, create_user
+):
+    # Setup: Assign a different user as the item seller
+    seller, _ = create_user(email="other_seller2@colby.edu")
+    with app.app_context():
+        sample_item.seller_id = seller.id
+        order = Order(
+            buyer_id=logged_in_user.id,
+            item_id=sample_item.id,
+            location="loc",
+            status="pending",
+        )
+        db.session.add(order)
+        db.session.commit()
+        oid = order.id
+
+    resp = client.post(f"/orders/{oid}/reject", follow_redirects=True)
+    assert b"not allowed to reject" in resp.data.lower()
 
 
 def test_edit_item_invalid_price(client, logged_in_user, app):
@@ -495,50 +528,6 @@ def test_update_profile(client, logged_in_user, app):
         assert user.last_name == "NewLN"
 
 
-def test_approve_pickup_authorized(client, logged_in_user, sample_item, app):
-    with app.app_context():
-        # Make logged_in_user the seller
-        sample_item.seller_id = logged_in_user.id
-        order = Order(
-            buyer_id=logged_in_user.id,
-            item_id=sample_item.id,
-            location="loc",
-            status="pending",
-        )
-        db.session.add(order)
-        db.session.commit()
-        oid = order.id
-
-    resp = client.post(f"/approve_pickup/{oid}", follow_redirects=True)
-    assert b"Pickup approved" in resp.data
-
-    with app.app_context():
-        order = db.session.get(Order, oid)
-        assert order.status == "approved"
-        assert order.item.is_active is False
-
-
-def test_approve_pickup_unauthorized(
-    client, logged_in_user, sample_item, app, create_user
-):
-    # Setup: Assign a different user as the item seller
-    seller, _ = create_user(email="other_seller2@colby.edu")
-    with app.app_context():
-        sample_item.seller_id = seller.id
-        order = Order(
-            buyer_id=logged_in_user.id,
-            item_id=sample_item.id,
-            location="loc",
-            status="pending",
-        )
-        db.session.add(order)
-        db.session.commit()
-        oid = order.id
-
-    resp = client.post(f"/approve_pickup/{oid}", follow_redirects=True)
-    assert b"not allowed to approve" in resp.data.lower()
-
-
 def test_mark_sold_authorized(client, logged_in_user, sample_item, app):
     with app.app_context():
         sample_item.seller_id = logged_in_user.id
@@ -652,25 +641,3 @@ def test_cosine_similarity_basic():
     assert cosine_similarity(None, v2) == 0.0
     assert cosine_similarity(v1, None) == 0.0
     assert cosine_similarity([0, 0], [1, 2]) == 0.0
-
-
-def test_approve_pickup_already_approved(client, logged_in_user, sample_item, app):
-    """
-    Covers the 'if order.status != pending' branch in main.approve_pickup.
-    Ensures that an order already in 'approved' status cannot be approved again.
-    """
-    with app.app_context():
-        sample_item.seller_id = logged_in_user.id
-        order = Order(
-            buyer_id=999,
-            item_id=sample_item.id,
-            location="Miller Library",
-            status="approved",
-        )
-        db.session.add(order)
-        db.session.commit()
-        oid = order.id
-
-    resp = client.post(f"/approve_pickup/{oid}", follow_redirects=True)
-
-    assert b"This order cannot be approved" in resp.data

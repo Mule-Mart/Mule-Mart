@@ -62,15 +62,15 @@
 
                         {% if current_user.id == order.item.seller_id %}
                         <div class="d-flex gap-2 mt-3">
-                            <form action="{{ url_for('main.approve_pickup', order_id=order.id) }}" method="POST" class="w-50">
+                            <form action="{{ url_for('main.approve_order', order_id=order.id) }}" method="POST" class="w-50">
                                 <button class="btn btn-success w-100">
                                     Approve
                                 </button>
                             </form>
 
-                            <form action="{{ url_for('main.handle_order', order_id=order.id, action='reject') }}" method="POST" class="w-50">
+                            <form action="{{ url_for('main.reject_order', order_id=order.id) }}" method="POST" class="w-50">
                                 <button class="btn btn-outline-danger w-100">
-                                    Cancel
+                                    Reject
                                 </button>
                             </form>
                         </div>

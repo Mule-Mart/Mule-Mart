@@ -279,26 +279,80 @@ def my_listings():
     )
 
 
-@main.route("/handle_order/<int:order_id>/<action>", methods=["POST"])
+@main.route("/orders/<int:order_id>/approve", methods=["POST"])
 @login_required
-def handle_order(order_id, action):
-    """Approve or Reject an order."""
+def approve_order(order_id):
     order = Order.query.get_or_404(order_id)
 
-    # Security check: Ensure current user is the seller of the item
     if order.item.seller_id != current_user.id:
-        flash("You are not authorized to manage this order.", "danger")
+        flash("You are not allowed to approve this order.", "danger")
         return redirect(url_for("main.my_listings"))
 
-    if action == "approve":
-        order.status = "approved"
-        flash(f"Order for {order.item.title} approved!", "success")
-    elif action == "reject":
-        order.status = "rejected"
-        flash(f"Order for {order.item.title} rejected.", "secondary")
+    if order.status != "pending":
+        flash("This order cannot be approved.", "warning")
+        return redirect(url_for("main.my_listings"))
+    
+    if not order.item.is_active or order.item.is_deleted:
+        flash("Item no longer available", "warning")
+        return redirect(url_for("main.my_listings"))
 
-    db.session.commit()
+    try:
+        order.status = "approved"
+        order.item.is_active = False
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Error approving order")
+        flash("An error occurred while approving the order. Please try again later.")
+        return redirect(url_for("main.my_listings"))
+
+    flash("Order has been approved. The buyer can now pick up the item.", "success")
     return redirect(url_for("main.my_listings"))
+
+
+@main.route("/orders/<int:order_id>/reject", methods=["POST"])
+@login_required
+def reject_order(order_id):
+    order = Order.query.get_or_404(order_id)
+
+    if order.item.seller_id != current_user.id:
+        flash("You are not allowed to reject this order.", "danger")
+        return redirect(url_for("main.my_listings"))
+
+    if order.status != "pending":
+        flash("This order cannot be rejected.", "warning")
+        return redirect(url_for("main.my_listings"))
+
+    try:
+        order.status = "rejected"
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Error rejecting order")
+        flash("An error occurred while rejecting the order. Please try again later.")
+        return redirect(url_for("main.my_listings"))
+
+    flash("Order has been rejected.", "success")
+    return redirect(url_for("main.my_listings"))
+
+
+@main.route("/mark_sold/<int:order_id>", methods=["POST"])
+@login_required
+def mark_sold(order_id):
+    order = Order.query.get_or_404(order_id)
+
+    # Only seller can mark as sold
+    if order.item.seller_id != current_user.id:
+        abort(403)
+
+    # Only approved orders can be marked as sold
+    if order.status != "approved":
+        return jsonify({"success": False, "message": "Order cannot be marked as sold."})
+
+    order.status = "completed"
+    db.session.commit()
+
+    return jsonify({"success": True})
 
 
 @main.route("/edit_item/<int:item_id>", methods=["GET", "POST"])
@@ -757,44 +811,3 @@ def update_profile():
     db.session.commit()
     return redirect(url_for("main.profile"))
 
-
-@main.route("/approve_pickup/<int:order_id>", methods=["POST"])
-@login_required
-def approve_pickup(order_id):
-    order = Order.query.get_or_404(order_id)
-
-    # Security → only the seller of the item can approve
-    if order.item.seller_id != current_user.id:
-        flash("You are not allowed to approve this order.", "danger")
-        return redirect(url_for("main.my_listings"))
-
-    if order.status != "pending":
-        flash("This order cannot be approved.", "warning")
-        return redirect(url_for("main.my_listings"))
-
-    # Change state to approved
-    order.status = "approved"
-    order.item.is_active = False
-    db.session.commit()
-
-    flash("Pickup approved! The buyer can now pick up the item.", "success")
-    return redirect(url_for("main.my_listings"))
-
-
-@main.route("/mark_sold/<int:order_id>", methods=["POST"])
-@login_required
-def mark_sold(order_id):
-    order = Order.query.get_or_404(order_id)
-
-    # Only seller can mark as sold
-    if order.item.seller_id != current_user.id:
-        abort(403)
-
-    # Only approved orders can be marked as sold
-    if order.status != "approved":
-        return jsonify({"success": False, "message": "Order cannot be marked as sold."})
-
-    order.status = "completed"
-    db.session.commit()
-
-    return jsonify({"success": True})
