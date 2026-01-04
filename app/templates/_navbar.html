@@ -6,10 +6,8 @@
 
       <!-- Brand (clickable home link) -->
       <a href="{{ url_for('main.home') }}" class="d-flex align-items-center gap-3 text-decoration-none">
-        <img src="{{ url_for('static', filename='images/colbynow_merch_logo.png') }}" alt="ColbyNow Logo"
-          class="rounded-circle" style="height: 2.5rem; width: 2.5rem;">
-
-        <span class="fs-5 fw-bold text-dark">ColbyNow Merchandise</span>
+        <img src="{{ url_for('static', filename='images/Mule Mart Logo V10 (Transparent, Text).svg') }}"
+          alt="Mule Mart Logo" style="height: 55px; width: auto;">
       </a>
 
       <!-- GLOBAL SEARCH BAR -->
@@ -37,7 +35,7 @@
         <a href="{{ url_for('main.profile') }}" class="d-flex align-items-center text-decoration-none gap-2">
 
           <img src="{{ current_user.profile_image_url }}"
-            onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/default_user_profile.png') }}';"
+            onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/default_user_profile.webp') }}';"
             class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #e2e6ea;"
             alt="Profile">
 
