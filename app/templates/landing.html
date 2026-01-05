@@ -33,57 +33,60 @@
         </div>
     </nav>
 
-    <!-- HERO SECTION -->
-    <section class="hero-section">
-        <div class="hero-card">
-            <h1 class="hero-title">The Marketplace for the<br>Colby Community</h1>
-            <p class="hero-subtitle">Buy, sell, and donate goods safely within a trusted campus environment.</p>
+    <!-- MAIN CONTENT -->
+    <main>
+        <!-- HERO SECTION -->
+        <section class="hero-section">
+            <div class="hero-card">
+                <h1 class="hero-title">The Marketplace for the<br>Colby Community</h1>
+                <p class="hero-subtitle">Buy, sell, and donate goods safely within a trusted campus environment.</p>
 
-            <div class="d-flex justify-content-center gap-3 mt-3">
-                <a href="{{ url_for('auth.signup') }}" class="btn colby-btn-primary">Create an Account</a>
-                <a href="{{ url_for('auth.login') }}" class="btn colby-btn-outline">Sign In</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- WHY SECTION -->
-    <section class="container why-section">
-        <h2 class="why-title text-center">Why You'll Love Mule Mart</h2>
-
-        <div class="row g-4 justify-content-center">
-
-            <div class="col-md-4">
-                <div class="why-card">
-                    <i class="bi bi-people-fill why-icon"></i>
-                    <h5 class="fw-bold">Community Verified</h5>
-                    <p class="text-muted small">
-                        Only Colby students, faculty, and staff — safe, trusted, and secure.
-                    </p>
+                <div class="d-flex justify-content-center gap-3 mt-3">
+                    <a href="{{ url_for('auth.signup') }}" class="btn colby-btn-primary">Create an Account</a>
+                    <a href="{{ url_for('auth.login') }}" class="btn colby-btn-outline">Sign In</a>
                 </div>
             </div>
+        </section>
 
-            <div class="col-md-4">
-                <div class="why-card">
-                    <i class="bi bi-recycle why-icon"></i>
-                    <h5 class="fw-bold">Sustainable Exchange</h5>
-                    <p class="text-muted small">
-                        Reduce waste by giving items a second life on campus.
-                    </p>
+        <!-- WHY SECTION -->
+        <section class="container why-section">
+            <h2 class="why-title text-center">Why You'll Love Mule Mart</h2>
+
+            <div class="row g-4 justify-content-center">
+
+                <div class="col-md-4">
+                    <div class="why-card">
+                        <i class="bi bi-people-fill why-icon"></i>
+                        <h5 class="fw-bold">Community Verified</h5>
+                        <p class="text-muted small">
+                            Only Colby students, faculty, and staff — safe, trusted, and secure.
+                        </p>
+                    </div>
                 </div>
-            </div>
 
-            <div class="col-md-4">
-                <div class="why-card">
-                    <i class="bi bi-lock-fill why-icon"></i>
-                    <h5 class="fw-bold">Simple & Intuitive</h5>
-                    <p class="text-muted small">
-                        List, browse, and exchange items effortlessly.
-                    </p>
+                <div class="col-md-4">
+                    <div class="why-card">
+                        <i class="bi bi-recycle why-icon"></i>
+                        <h5 class="fw-bold">Sustainable Exchange</h5>
+                        <p class="text-muted small">
+                            Reduce waste by giving items a second life on campus.
+                        </p>
+                    </div>
                 </div>
-            </div>
 
-        </div>
-    </section>
+                <div class="col-md-4">
+                    <div class="why-card">
+                        <i class="bi bi-lock-fill why-icon"></i>
+                        <h5 class="fw-bold">Simple & Intuitive</h5>
+                        <p class="text-muted small">
+                            List, browse, and exchange items effortlessly.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
 
     <!-- FOOTER -->
     <footer class="footer">
