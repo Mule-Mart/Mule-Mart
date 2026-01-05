@@ -2,7 +2,9 @@
 
 **Authors**: Francis O’Hara Aidoo, Rose Agyapong, Ninh Giang Nguyen, Simon Lartey
 
-<center> <img src="app/static/images/Mule Mart Logo V10 (Transparent).svg" width=600px></center>
+<p align="center">
+  <img src="app/static/images/Mule Mart Logo V10 (Transparent).svg" width="600">
+</p>
 
 [![CI](https://github.com/mule-mart/mule-mart/actions/workflows/run_tests.yml/badge.svg)](https://github.com/mule-mart/mule-mart/actions/workflows/run_tests.yml)
 [![Lint](https://github.com/mule-mart/mule-mart/actions/workflows/lint.yml/badge.svg)](https://github.com/mule-mart/mule-mart/actions/workflows/lint.yml)
@@ -59,6 +61,42 @@
 
 ### Intelligent Search
 - A major technical extension of this project is semantic search, implemented using SentenceTransformer embeddings. Instead of relying solely on keyword matching, the system retrieves conceptually related items based on meaning. 
+
+---
+
+## Screenshots
+
+### Authentication
+| Login | Sign Up |
+|:---:|:---:|
+| <img src="app/static/images/screenshots/login.png" width="400"> | <img src="app/static/images/screenshots/signup.png" width="400"> |
+
+### Marketplace
+| Feed | Buy Page |
+|:---:|:---:|
+| <img src="app/static/images/screenshots/home_feed.png" width="400"> | <img src="app/static/images/screenshots/buy_page.png" width="400"> |
+
+| Item Details | Place Order |
+|:---:|:---:|
+| <img src="app/static/images/screenshots/item_details.png" width="400"> | <img src="app/static/images/screenshots/place_order.png" width="400"> |
+
+| Post Item |
+|:---:|
+| <img src="app/static/images/screenshots/post_item.png" width="400"> |
+
+### User Dashboard
+| Profile | My Orders |
+|:---:|:---:|
+| <img src="app/static/images/screenshots/profile.png" width="400"> | <img src="app/static/images/screenshots/my_orders.png" width="400"> |
+
+| My Listings | Favorites |
+|:---:|:---:|
+| <img src="app/static/images/screenshots/my_listings.png" width="400"> | <img src="app/static/images/screenshots/favorites.png" width="400"> |
+
+### Communication
+| Inbox & Chat |
+|:---:|
+| <img src="app/static/images/screenshots/inbox_chat.png" width="400"> |
 
 ---
 
