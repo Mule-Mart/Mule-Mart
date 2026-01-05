@@ -67,8 +67,7 @@ def send_verification_email(user):
     verify_url = url_for("auth.verify_email", token=token, _external=True)
 
     msg = Message(
-        subject="Verify Your ColbyNow Account",
-        sender=current_app.config["MAIL_USERNAME"],
+        subject="Verify Your Mule Mart Account",
         recipients=[user.email],
         body=(
             f"Hi {user.first_name},\n\n"
@@ -157,7 +156,6 @@ def generate_password_reset(email):
 
     msg = Message(
         subject="Password Reset Request",
-        sender=current_app.config["MAIL_USERNAME"],
         recipients=[email],
         body=f"Reset your password:\n{reset_url}",
     )

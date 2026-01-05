@@ -4,6 +4,13 @@ body {
     padding: 0;
     font-family: 'Inter', sans-serif;
     background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex-grow: 1;
 }
 
 /*  NAVBAR (Frosted Glass)  */
@@ -11,13 +18,17 @@ body {
     backdrop-filter: blur(12px);
     background: rgba(255, 255, 255, 0.6) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 3px;
+}
+
+.navbar-brand {
+    padding: 5px;
 }
 
 /* Logo image */
 .navbar-brand img {
-    height: 40px;
-    width: 40px;
-    border-radius: 50%;
+    height: 55px;
+    width: auto;
 }
 
 /* Buttons */
@@ -47,24 +58,41 @@ body {
 
 /*  HERO SECTION  */
 .hero-section {
-    height: 90vh;
+    height: 80vh;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
 
-    /* FIXED: load your actual image */
+.hero-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
     background:
         linear-gradient(rgba(0, 32, 85, 0.55), rgba(0, 32, 85, 0.55)),
-        url('../images/landing_page_hero.png') center/cover no-repeat;
-
-    animation: heroZoom 10s ease-in-out infinite;
+        url('../images/landing_page_hero.webp') center/cover no-repeat;
+    animation: heroZoom 15s ease-in-out infinite;
 }
 
 /* Ken Burns Slow Zoom */
 @keyframes heroZoom {
-    0% { background-size: 100%; }
-    50% { background-size: 108%; }
-    100% { background-size: 100%; }
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 /* Hero card */
@@ -97,6 +125,31 @@ body {
     font-size: 1.05rem;
     margin-bottom: 30px;
     opacity: 0.9;
+}
+
+/* Hero buttons - improved contrast */
+.hero-card .colby-btn-outline {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    transition: all 0.3s ease;
+}
+
+.hero-card .colby-btn-outline:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.hero-card .colby-btn-primary {
+    transition: all 0.3s ease;
+}
+
+.hero-card .colby-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 /*  WHY SECTION  */
@@ -138,4 +191,22 @@ body {
     padding: 40px 0;
     text-align: center;
     font-size: 0.9rem;
+}
+
+/*  FLASH MESSAGES OVERLAY  */
+.flash-overlay {
+    position: absolute;
+    width: 100%;
+    max-width: 600px;
+    top: 100%;
+    z-index: 1050;
+    pointer-events: none;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 1rem;
+}
+
+.flash-overlay .alert {
+    pointer-events: auto;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }

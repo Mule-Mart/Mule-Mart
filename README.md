@@ -1,19 +1,35 @@
-# Colby-Now-Merchandise
+# Mule-Mart
 
-Authors: Francis O’Hara Aidoo, Rose Agyapong, Ninh Giang Nguyen, Simon Lartey
+**Authors**: Francis O’Hara Aidoo, Rose Agyapong, Ninh Giang Nguyen, Simon Lartey
 
-<center> <img src="app/static/images/colbynow_merch_logo.png" width=300px></center>
+<p align="center">
+  <img src="app/static/images/Mule Mart Logo V10 (Transparent).svg" width="600">
+</p>
 
-👉 Live App: https://colbynowmerchandise.com/  
+[![CI](https://github.com/mule-mart/mule-mart/actions/workflows/run_tests.yml/badge.svg)](https://github.com/mule-mart/mule-mart/actions/workflows/run_tests.yml)
+[![Lint](https://github.com/mule-mart/mule-mart/actions/workflows/lint.yml/badge.svg)](https://github.com/mule-mart/mule-mart/actions/workflows/lint.yml)
+![Python](https://img.shields.io/badge/python-3.x-blue)
+
+👉 Live App: https://mulemart.com/  
 👉 Live Demo: [Watch here](https://drive.google.com/file/d/1hK4I7gq76e5CHXErsHI6UwAylSC5V6pP/view?usp=sharing)
 
-- A full-stack web application that serves as an online marketplace for the Colby College community where students, staff, and faculty can buy, sell, and donate items.
-- This project uses a Flask backend to handle user authentication, product listings, and other business logic, with a standard HTML, CSS, and JavaScript frontend.
+- A dedicated online marketplace for the Colby College community to buy, sell, and donate items.
+- This project currently uses a Flask backend to handle user authentication, product listings, and other business logic, with a standard HTML, CSS, and JavaScript frontend.
+
+## Table of Contents
+- [Key Features](#key-features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
 
 ## Key Features
 
 ### Authentication and Security
-- Secure sign-up and login for verified users (just Colby people)
+- Secure sign-up and login for verified users (restricted to Colby College email addresses)
 - Google OAuth authentication
 - Password reset and account recovery
 
@@ -43,8 +59,44 @@ Authors: Francis O’Hara Aidoo, Rose Agyapong, Ninh Giang Nguyen, Simon Lartey
 - Favorites page for saved items
 - Revamped My Orders and My Listings dashboards
 
-### Intelligent Search Extension
+### Intelligent Search
 - A major technical extension of this project is semantic search, implemented using SentenceTransformer embeddings. Instead of relying solely on keyword matching, the system retrieves conceptually related items based on meaning. 
+
+---
+
+## Screenshots
+
+### Authentication
+| Login | Sign Up |
+|:---:|:---:|
+| <img src="app/static/images/screenshots/login.png" width="400"> | <img src="app/static/images/screenshots/signup.png" width="400"> |
+
+### Marketplace
+| Feed | Buy Page |
+|:---:|:---:|
+| <img src="app/static/images/screenshots/home_feed.png" width="400"> | <img src="app/static/images/screenshots/buy_page.png" width="400"> |
+
+| Item Details | Place Order |
+|:---:|:---:|
+| <img src="app/static/images/screenshots/item_details.png" width="400"> | <img src="app/static/images/screenshots/place_order.png" width="400"> |
+
+| Post Item |
+|:---:|
+| <img src="app/static/images/screenshots/post_item.png" width="400"> |
+
+### User Dashboard
+| Profile | My Orders |
+|:---:|:---:|
+| <img src="app/static/images/screenshots/profile.png" width="400"> | <img src="app/static/images/screenshots/my_orders.png" width="400"> |
+
+| My Listings | Favorites |
+|:---:|:---:|
+| <img src="app/static/images/screenshots/my_listings.png" width="400"> | <img src="app/static/images/screenshots/favorites.png" width="400"> |
+
+### Communication
+| Inbox & Chat |
+|:---:|
+| <img src="app/static/images/screenshots/inbox_chat.png" width="400"> |
 
 ---
 
@@ -60,53 +112,85 @@ CI/CD workflow:
 ---
 
 ## Tech Stack
-
-- Backend: Python, Flask, SQLAlchemy, Flask-Login, RESTful APIs
-- Frontend: HTML, CSS, JavaScript, Bootstrap 5
-- Database: SQLite for local development, PostgreSQL for production
-- Search and Machine Learning: SentenceTransformer for semantic search
-- Testing: Pytest, pytest-cov
-- Deployment: Heroku, GitHub Actions
+### Backend
+- **Framework:** Python, Flask
+- **Database ORM:** SQLAlchemy, Flask-Migrate
+- **Authentication:** Flask-Login, Flask-Dance (Google OAuth)
+- **Email:** Flask-Mail
+### Frontend
+- **Core:** HTML5, CSS3, JavaScript (ES6+)
+- **Framework:** Bootstrap 5
+### Data & Infrastructure
+- **Database:** SQLite (Local), PostgreSQL (Production)
+- **Object Storage:** AWS S3 (via Boto3) for profile & item images
+- **Deployment:** Heroku
+### Search & AI
+- **Semantic Search:** SentenceTransformer, PyTorch, NumPy
+### Quality Assurance
+- **Testing:** Pytest, pytest-cov
+- **Linting:** Black
+- **CI/CD:** GitHub Actions
 
 ---
 ## Project structure
 
 ```
-Colby-Now-Merchandise/
-├── README.md
-├── .env                # Environment variables (needs to be created)
-├── .env.example        # Example environment variables
-├── requirements.txt    # Project dependencies
-├── run.py              # Application entry point
-├── instance/
-│   └── users.db        # SQLite database (auto-generated on run)
-└── app/
-    ├── __init__.py     # Main Flask application factory
-    ├── auth.py         # Authentication routes (signup, login, reset password, etc.)
-    ├── main.py         # Core application routes (homepage, posting, item details, etc.)
-    ├── models.py       # SQLAlchemy database models
-    ├── static/
-    │   ├── css/
-    │   │   ├── auth.css
-    │   │   ├── buy_item.css
-    │   │   └── style.css
-    │   ├── images/
-    │   │   ├── bg-1.jpg
-    │   │   ├── colby_logo.jpg
-    │   │   ├── colbynow_merch_logo.png
-    │   │   └── miller_library.jpg
-    │   ├── js/
-    │   │   └── auth.js
-    │   └── uploads/    # User-uploaded item images (auto-generated)
-    └── templates/
-        ├── buy_item.html
-        ├── forgot_password.html
-        ├── home.html
-        ├── item_details.html
-        ├── login.html
-        ├── post_new_item.html
-        ├── reset_password.html
-        └── signup.html
+Mule-Mart/
+    ├── .env.example
+    ├── .github/
+    │   ├── ISSUE_TEMPLATE/
+    │   │   ├── bug-report.yml
+    │   │   └── feature-request.yml
+    │   ├── pull_request_template.md
+    │   └── workflows/
+    │       ├── lint.yml
+    │       └── run_tests.yml
+    ├── .gitignore
+    ├── .python-version
+    ├── Procfile
+    ├── README.md
+    ├── app/
+    │   ├── __init__.py
+    │   ├── api/
+    │   │   ├── __init__.py
+    │   │   ├── auth_routes.py
+    │   │   ├── chat_routes.py
+    │   │   ├── items_routes.py
+    │   │   ├── orders_routes.py
+    │   │   ├── responses.py
+    │   │   └── users_routes.py
+    │   ├── auth.py
+    │   ├── main.py
+    │   ├── models.py
+    │   ├── services/
+    │   │   ├── auth_service.py
+    │   │   ├── storage_service.py
+    │   │   └── user_service.py
+    │   ├── static/
+    │   │   ├── css/
+    │   │   ├── images/
+    │   │   └── js/
+    │   ├── templates/
+    │   └── utils/
+    │       ├── __init__.py
+    │       ├── search_utils.py
+    │       └── validators.py
+    ├── migrations/
+    ├── requirements.txt
+    ├── run.py
+    ├── scripts/
+    │   ├── backfill_embeddings.py
+    │   └── verify_search.py
+    └── tests/
+        ├── conftest.py
+        ├── test_api.py
+        ├── test_auth.py
+        ├── test_chat_and_inbox.py
+        ├── test_chat_extra.py
+        ├── test_main_and_orders.py
+        ├── test_main_extra.py
+        ├── test_search_utils.py
+        └── test_validators_and_models.py
 ```
 
 **Note:** The `.env` file (for environment variables) should be created in the root directory as described in the "Configure Environment Variables" section below. The `instance/` and `static/uploads/` directories are auto-generated when the application runs.
@@ -126,7 +210,7 @@ First, clone the repository and navigate into the project directory.
 
 ```bash
 # Navigate to the project folder
-cd /path/to/Colby-Now-Merchandise
+cd /path/to/Mule-Mart
 
 # Create and activate a Python virtual environment
 python3 -m venv venv
@@ -178,3 +262,27 @@ The application will start in debug mode and be accessible at:
 **http://127.0.0.1:5000**
 
 When you first run the app, a `users.db` SQLite database file will be created in the `instance/` directory.
+
+### 6. Development Tools
+
+**Running Tests**
+To run the automated test suite:
+```bash
+pytest
+```
+
+**Code Linting**
+To check code formatting:
+```bash
+black .
+```
+
+## Contributing
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+Distributed under the MIT License. See `LICENSE` for more information.

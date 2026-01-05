@@ -50,6 +50,7 @@ def create_app():
     app.config["MAIL_USE_TLS"] = True
     app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
     app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
+    app.config["MAIL_DEFAULT_SENDER"] = os.getenv("CONTACT_EMAIL")
 
     # Initialize AWS Boto3 client for storing images
     s3 = boto3.client(
@@ -61,6 +62,7 @@ def create_app():
     )
     app.s3_client = s3
     app.s3_bucket_id = os.getenv("AWS_S3_BUCKET_ID")
+    app.config["CONTACT_EMAIL"] = os.getenv("CONTACT_EMAIL", "")
 
     # Initialize database and mail, migrate
     db.init_app(app)
@@ -108,13 +110,13 @@ def create_app():
         return redirect(url_for("main.post_item")), 413
 
     @app.context_processor
-    def inject_unread_count():
+    def inject_global_context():
         if current_user.is_authenticated:
             count = Chat.query.filter_by(
                 receiver_id=current_user.id, is_read=False
             ).count()
-            return dict(unread_count=count)
-        return dict(unread_count=0)
+            return dict(unread_count=count, contact_email=app.config["CONTACT_EMAIL"])
+        return dict(unread_count=0, contact_email=app.config["CONTACT_EMAIL"])
 
     return app
 

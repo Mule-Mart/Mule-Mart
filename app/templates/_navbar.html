@@ -1,115 +1,115 @@
-<nav class="bg-white shadow-sm">
-  <div class="container-xl">
+<div style="position: relative; z-index: 1051;">
+  <nav class="bg-white shadow-sm">
+    <div class="container-xl">
 
-    <!-- ================= ROW 1 — LOGO + GLOBAL SEARCH + PROFILE/LOGOUT ================= -->
-    <div class="d-flex justify-content-between align-items-center py-3">
+      <!-- ================= ROW 1 — LOGO + GLOBAL SEARCH + PROFILE/LOGOUT ================= -->
+      <div class="d-flex justify-content-between align-items-center py-3">
 
-      <!-- Brand (clickable home link) -->
-      <a href="{{ url_for('main.home') }}" class="d-flex align-items-center gap-3 text-decoration-none">
-        <img src="{{ url_for('static', filename='images/colbynow_merch_logo.png') }}" alt="ColbyNow Logo"
-          class="rounded-circle" style="height: 2.5rem; width: 2.5rem;">
-
-        <span class="fs-5 fw-bold text-dark">ColbyNow Merchandise</span>
-      </a>
-
-      <!-- GLOBAL SEARCH BAR -->
-      <form id="global-search-form" method="GET" action="{{ url_for('main.buy_item') }}"
-        class="d-flex position-relative flex-grow-1 mx-4" autocomplete="off">
-
-        <input id="global-search-input" name="search" type="text" class="form-control px-4"
-          placeholder="Search items..."
-          value="{% if request.endpoint in ['main.home', 'main.buy_item'] %}{{ request.args.get('search', '') }}{% endif %}"
-          style="height: 45px; border-radius: 25px 0 0 25px;">
-
-        <button type="submit" class="btn btn-primary px-4" style="height: 45px; border-radius: 0 25px 25px 0;">
-          <i class="bi bi-search"></i>
-        </button>
-
-        <!-- AUTOCOMPLETE DROPDOWN -->
-        <div id="search-suggestions" class="position-absolute bg-white border rounded shadow-sm mt-2 w-100"
-          style="z-index: 2000; display: none; top: 48px;"></div>
-      </form>
-
-      <!-- Right Section -->
-      <div class="d-flex align-items-center gap-4">
-
-        <!-- PROFILE -->
-        <a href="{{ url_for('main.profile') }}" class="d-flex align-items-center text-decoration-none gap-2">
-
-          <img src="{{ current_user.profile_image_url }}"
-            onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/default_user_profile.png') }}';"
-            class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #e2e6ea;"
-            alt="Profile">
-
-          <span class="nav-profile-text">Profile</span>
+        <!-- Brand (clickable home link) -->
+        <a href="{{ url_for('main.home') }}" class="d-flex align-items-center gap-3 text-decoration-none">
+          <img src="{{ url_for('static', filename='images/Mule Mart Logo V10 (Transparent, Text).svg') }}"
+            alt="Mule Mart Logo" style="height: 55px; width: auto;">
         </a>
 
-        <a class="nav-link position-relative" href="{{ url_for('main.inbox') }}">
-          <i class="bi bi-chat-dots fs-5"></i>
+        <!-- GLOBAL SEARCH BAR -->
+        <form id="global-search-form" method="GET" action="{{ url_for('main.buy_item') }}"
+          class="d-flex position-relative flex-grow-1 mx-4" autocomplete="off">
 
-          {% if unread_count > 0 %}
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-            {{ unread_count }}
-          </span>
-          {% endif %}
+          <input id="global-search-input" name="search" type="text" class="form-control px-4"
+            placeholder="Search items..."
+            value="{% if request.endpoint in ['main.home', 'main.buy_item'] %}{{ request.args.get('search', '') }}{% endif %}"
+            style="height: 45px; border-radius: 25px 0 0 25px;">
+
+          <button type="submit" class="btn btn-primary px-4" style="height: 45px; border-radius: 0 25px 25px 0;">
+            <i class="bi bi-search"></i>
+          </button>
+
+          <!-- AUTOCOMPLETE DROPDOWN -->
+          <div id="search-suggestions" class="position-absolute bg-white border rounded shadow-sm mt-2 w-100"
+            style="z-index: 2000; display: none; top: 48px;"></div>
+        </form>
+
+        <!-- Right Section -->
+        <div class="d-flex align-items-center gap-4">
+
+          <!-- PROFILE -->
+          <a href="{{ url_for('main.profile') }}" class="d-flex align-items-center text-decoration-none gap-2">
+
+            <img src="{{ current_user.profile_image_url }}"
+              onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/default_user_profile.webp') }}';"
+              class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover; border: 2px solid #e2e6ea;"
+              alt="Profile">
+
+            <span class="nav-profile-text">Profile</span>
+          </a>
+
+          <a class="nav-link position-relative" href="{{ url_for('main.inbox') }}">
+            <i class="bi bi-chat-dots fs-5"></i>
+
+            {% if unread_count > 0 %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+              {{ unread_count }}
+            </span>
+            {% endif %}
+          </a>
+
+          <!-- LOGOUT -->
+          <a href="{{ url_for('auth.logout') }}" class="nav-profile-text text-decoration-none">
+            Logout
+          </a>
+
+
+        </div>
+      </div>
+
+      <!-- ================= ROW 2 — NAVIGATION ================= -->
+      <div class="d-flex justify-content-center align-items-center gap-4 border-top pt-3 pb-2">
+
+        <a href="{{ url_for('main.home') }}" class="text-decoration-none fw-medium 
+         {% if request.endpoint == 'main.home' %}text-primary fw-bold{% else %}text-secondary{% endif %}">
+          Home
         </a>
 
-        <!-- LOGOUT -->
-        <a href="{{ url_for('auth.logout') }}" class="nav-profile-text text-decoration-none">
-          Logout
+        <a href="{{ url_for('main.buy_item') }}" class="text-decoration-none fw-medium 
+         {% if request.endpoint == 'main.buy_item' %}text-primary fw-bold{% else %}text-secondary{% endif %}">
+          Buy
         </a>
 
+        <a href="{{ url_for('main.post_item') }}" class="text-decoration-none fw-medium 
+         {% if request.endpoint == 'main.post_item' %}text-primary fw-bold{% else %}text-secondary{% endif %}">
+          Sell or Donate
+        </a>
+
+        <a href="{{ url_for('main.my_listings') }}" class="text-decoration-none fw-medium 
+         {% if request.endpoint == 'main.my_listings' %}text-primary fw-bold{% else %}text-secondary{% endif %}">
+          My Listings
+        </a>
+
+        <a href="{{ url_for('main.my_orders') }}" class="text-decoration-none fw-medium 
+         {% if request.endpoint == 'main.my_orders' %}text-primary fw-bold{% else %}text-secondary{% endif %}">
+          My Orders
+        </a>
+
+        <a href="{{ url_for('main.contact_us') }}" class="text-decoration-none fw-medium 
+         {% if request.endpoint == 'main.contact_us' %}text-primary fw-bold{% else %}text-secondary{% endif %}">
+          Contact Us
+        </a>
+
+        <a href="{{ url_for('main.favorites') }}" class="text-decoration-none fw-medium 
+         {% if request.endpoint == 'main.favorites' %}text-primary fw-bold{% else %}text-secondary{% endif %}">
+          Favorites
+        </a>
 
       </div>
-    </div>
-
-    <!-- ================= ROW 2 — NAVIGATION ================= -->
-    <div class="d-flex justify-content-center align-items-center gap-4 border-top pt-3 pb-2">
-
-      <a href="{{ url_for('main.home') }}" class="text-decoration-none fw-medium 
-         {% if request.endpoint == 'main.home' %}text-primary fw-bold{% else %}text-secondary{% endif %}">
-        Home
-      </a>
-
-      <a href="{{ url_for('main.buy_item') }}" class="text-decoration-none fw-medium 
-         {% if request.endpoint == 'main.buy_item' %}text-primary fw-bold{% else %}text-secondary{% endif %}">
-        Buy
-      </a>
-
-      <a href="{{ url_for('main.post_item') }}" class="text-decoration-none fw-medium 
-         {% if request.endpoint == 'main.post_item' %}text-primary fw-bold{% else %}text-secondary{% endif %}">
-        Sell or Donate
-      </a>
-
-      <a href="{{ url_for('main.my_listings') }}" class="text-decoration-none fw-medium 
-         {% if request.endpoint == 'main.my_listings' %}text-primary fw-bold{% else %}text-secondary{% endif %}">
-        My Listings
-      </a>
-
-      <a href="{{ url_for('main.my_orders') }}" class="text-decoration-none fw-medium 
-         {% if request.endpoint == 'main.my_orders' %}text-primary fw-bold{% else %}text-secondary{% endif %}">
-        My Orders
-      </a>
-
-      <a href="{{ url_for('main.contact_us') }}" class="text-decoration-none fw-medium 
-         {% if request.endpoint == 'main.contact_us' %}text-primary fw-bold{% else %}text-secondary{% endif %}">
-        Contact Us
-      </a>
-
-      <a href="{{ url_for('main.favorites') }}" class="text-decoration-none fw-medium 
-         {% if request.endpoint == 'main.favorites' %}text-primary fw-bold{% else %}text-secondary{% endif %}">
-        Favorites
-      </a>
 
     </div>
+  </nav>
 
-  </div>
-</nav>
+  <script src="{{ url_for('static', filename='js/search_autocomplete.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-<script src="{{ url_for('static', filename='js/search_autocomplete.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Flash Messages (Global) -->
-<div class="container-xl mt-3">
+  <!-- Flash Messages (Global) -->
+  {% with container_class="container-xl flash-overlay", message_class="mt-3" %}
   {% include "_flash_messages.html" %}
+  {% endwith %}
 </div>

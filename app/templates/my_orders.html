@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Orders - ColbyNow Merchandise</title>
+    <title>My Orders - Mule Mart</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon.svg') }}">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -16,7 +17,7 @@
 
     {% include "_navbar.html" %}
 
-    <div class="container my-5">
+    <main class="container my-5">
 
         <div class="d-flex justify-content-between align-items-center flex-wrap mb-5">
             <div>
@@ -29,8 +30,8 @@
 
                 <div class="search-wrapper d-flex align-items-center">
                     <i class="bi bi-search search-icon"></i>
-                    <input type="text" name="search" class="search-input form-control"
-                        placeholder="Search orders" value="{{ request.args.get('search', '') }}"
+                    <input type="text" name="search" class="search-input form-control" placeholder="Search orders"
+                        value="{{ request.args.get('search', '') }}"
                         oninput="if(this.value === '') window.location='{{ url_for('main.my_orders') }}';">
                 </div>
 
@@ -52,10 +53,9 @@
                 <div class="card-body p-4 d-flex flex-column flex-md-row gap-4 align-items-center">
 
                     <div class="flex-shrink-0">
-                        <img src="{{ order.item.item_image_url }}" 
-                             onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default_item.png') }}'"
-                             class="rounded order-img shadow-sm" 
-                             alt="{{ order.item.title }}">
+                        <img src="{{ order.item.item_image_url }}"
+                            onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default_item.webp') }}'"
+                            class="rounded order-img shadow-sm" alt="{{ order.item.title }}">
                     </div>
 
                     <div class="flex-grow-1 w-100">
@@ -101,10 +101,9 @@
                 <div class="card-body p-4 d-flex flex-column flex-md-row gap-4 align-items-center">
 
                     <div class="flex-shrink-0">
-                        <img src="{{ order.item.item_image_url }}" 
-                             onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default_item.png') }}'"
-                             class="rounded order-img shadow-sm" 
-                             alt="{{ order.item.title }}">
+                        <img src="{{ order.item.item_image_url }}"
+                            onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default_item.webp') }}'"
+                            class="rounded order-img shadow-sm" alt="{{ order.item.title }}">
                     </div>
 
                     <div class="flex-grow-1 w-100">
@@ -160,26 +159,26 @@
             {% endif %}
         </div>
 
-    </div>
+    </main>
 
     <footer class="border-top mt-5 py-4 bg-white text-center text-muted small">
-        &copy; 2026 ColbyNow Merchandise. All rights reserved.
+        &copy; 2026 Mule Mart. All rights reserved.
     </footer>
 
 </body>
 
 <script>
-function confirmDelivery(orderId) {
-    fetch(`/confirm_order/${orderId}`, {
-        method: "POST",
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        }
-    });
-}
+    function confirmDelivery(orderId) {
+        fetch(`/confirm_order/${orderId}`, {
+            method: "POST",
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+    }
 </script>
 
 </html>

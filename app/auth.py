@@ -82,7 +82,7 @@ def login():
 def logout():
     logout_user()
     flash("You have been logged out.", "info")
-    return redirect(url_for("auth.login"))
+    return redirect(url_for("main.landing"))
 
 
 # ---------- FORGOT PASSWORD ----------
