@@ -1,5 +1,5 @@
 """
-API package for Mule Mart 
+API package for Mule Mart
 REST API v1.0
 """
 
