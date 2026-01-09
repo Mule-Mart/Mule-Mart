@@ -146,8 +146,8 @@
       <h4>Support</h4>
       <p>
         Email:
-        <a href="mailto:colbynowmerchandise@gmail.com">
-          colbynowmerchandise@gmail.com
+        <a href="mailto:support@mulemart.com">
+          support@mulemart.com
         </a>
       </p>
       <p>
@@ -161,9 +161,7 @@
 
   </div>
 
-  <div class="footer-bottom">
-    © 2025, Mule Mart, BitWise CacheFlow
-  </div>
+  <div class="footer-bottom">© Mule Mart</div>
 
 </footer>
 
@@ -171,4 +169,16 @@
   function openLiveChat() {
     console.log("Live chat opened");
   }
+
+  function setFooterCopyrightText() {
+    const footerCopyrightText = document.querySelector(".footer-bottom");
+    const currentYear = new Date().getFullYear();
+    if (footerCopyrightText) {
+      footerCopyrightText.textContent = `© ${currentYear} Mule Mart`;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    setFooterCopyrightText();
+  });
 </script>
