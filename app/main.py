@@ -266,7 +266,9 @@ def my_listings():
     pending_orders = [o for o in incoming_orders if o.status == "pending"]
     approved_orders = [o for o in incoming_orders if o.status == "approved"]
     completed_orders = [o for o in incoming_orders if o.status == "completed"]
-    cancelled_orders = [o for o in incoming_orders if o.status == "cancelled"]
+    inactive_orders = [
+        o for o in incoming_orders if o.status in ("cancelled", "rejected")
+    ]
 
     return render_template(
         "my_listings.html",
@@ -274,7 +276,7 @@ def my_listings():
         pending_orders=pending_orders,
         approved_orders=approved_orders,
         completed_orders=completed_orders,
-        cancelled_orders=cancelled_orders,
+        inactive_orders=inactive_orders,
         current_search=search,
     )
 
@@ -334,6 +336,28 @@ def reject_order(order_id):
 
     flash("Order has been rejected.", "success")
     return redirect(url_for("main.my_listings"))
+
+
+@main.route("/orders/<int:order_id>/cancel", methods=["POST"])
+@login_required
+def cancel_order(order_id):
+    order = Order.query.get_or_404(order_id)
+
+    if order.buyer_id != current_user.id:
+        abort(403)
+
+    if order.status != "pending":
+        return jsonify({"success": False})
+
+    try:
+        order.status = "cancelled"
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Error cancelling order")
+        return jsonify({"success": False})
+
+    return jsonify({"success": True})
 
 
 @main.route("/mark_sold/<int:order_id>", methods=["POST"])
@@ -522,14 +546,18 @@ def my_orders():
     pending_orders = [o for o in orders if o.status == "pending"]
     approved_orders = [o for o in orders if o.status == "approved"]
     completed_orders = [o for o in orders if o.status == "completed"]
-    cancelled_orders = [o for o in orders if o.status == "cancelled"]
+
+    # inactive orders
+    cancelled_or_rejected_orders = [
+        o for o in orders if o.status in ("cancelled", "rejected")
+    ]
 
     return render_template(
         "my_orders.html",
         pending_orders=pending_orders,
         approved_orders=approved_orders,
         completed_orders=completed_orders,
-        cancelled_orders=cancelled_orders,
+        cancelled_or_rejected_orders=cancelled_or_rejected_orders,
         current_search=search,
     )
 

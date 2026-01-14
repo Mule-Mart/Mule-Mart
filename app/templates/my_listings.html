@@ -157,6 +157,53 @@
         <hr class="my-5">
         {% endif %}
 
+
+        <!-- ============================= -->
+        <!-- CANCELLED / REJECTED ORDERS -->
+        <!-- ============================= -->
+        {% if inactive_orders %}
+        <div class="mb-5">
+            <h3 class="fw-bold mb-3 text-muted">
+                Cancelled & Rejected Orders
+            </h3>
+
+            <div class="row g-3">
+                {% for order in inactive_orders %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm border-0 p-3 opacity-50">
+
+                        <h5 class="fw-bold text-secondary mb-1">
+                            {{ order.item.title }}
+                        </h5>
+
+                        <p class="small text-muted mb-1">
+                            Buyer: <strong>{{ order.buyer.name }}</strong>
+                        </p>
+
+                        <p class="small text-muted mb-2">
+                            {% if order.status == "cancelled" %}
+                                Cancelled by buyer
+                            {% else %}
+                                Rejected by you
+                            {% endif %}
+                        </p>
+
+                        {% if order.status == "rejected" %}
+                        <span class="badge bg-danger align-self-start">Rejected</span>
+                        {% else %}
+                        <span class="badge bg-dark align-self-start">Cancelled</span>
+                        {% endif %}
+
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <hr class="my-5">
+        {% endif %}
+
+
         <!-- ============================= -->
         <!-- USER LISTINGS -->
         <!-- ============================= -->

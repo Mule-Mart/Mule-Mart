@@ -79,6 +79,12 @@
                         {% if order.notes %}
                         <p class="mb-1 text-muted small fst-italic">"{{ order.notes }}"</p>
                         {% endif %}
+
+                        <button class="btn btn-outline-danger btn-sm fw-medium mt-2"
+                                onclick="cancelOrder({{ order.id }})">
+                            <i class="bi bi-x-circle me-1"></i> Cancel Request
+                        </button>
+
                     </div>
 
                 </div>
@@ -159,6 +165,43 @@
             {% endif %}
         </div>
 
+        <!-- CANCELLED / REJECTED ORDERS -->
+        <div class="mb-5">
+            <h5 class="fw-bold text-uppercase text-muted mb-3 border-bottom pb-2">
+                Cancelled & Rejected Orders
+            </h5>
+
+            {% if cancelled_or_rejected_orders %}
+            {% for order in cancelled_or_rejected_orders %}
+            <div class="card shadow-sm border-0 mb-3 opacity-50">
+                <div class="card-body p-3 d-flex align-items-center gap-3">
+
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-1 text-muted">
+                            {{ order.item.title }}
+                        </h6>
+                        <small class="text-muted">
+                            Status: {{ order.status | capitalize }}
+                        </small>
+                    </div>
+
+                    {% if order.status == "rejected" %}
+                    <span class="badge bg-danger rounded-pill">Rejected</span>
+                    {% else %}
+                    <span class="badge bg-dark rounded-pill">Cancelled</span>
+                    {% endif %}
+
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted small fst-italic">
+                No cancelled or rejected orders.
+            </p>
+            {% endif %}
+        </div>
+
+
     </main>
 
     {% include '_footer.html' %}
@@ -170,12 +213,26 @@
         fetch(`/confirm_order/${orderId}`, {
             method: "POST",
         })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                }
-            });
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+
+    function cancelOrder(orderId) {
+        fetch(`/orders/${orderId}/cancel`, {
+            method: "POST",
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert("Could not cancel order.");
+            }
+        });
     }
 </script>
 

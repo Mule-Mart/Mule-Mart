@@ -399,6 +399,35 @@ def test_my_orders_grouping(client, logged_in_user, sample_item, app):
     assert b"completed" in resp.data.lower()
 
 
+def test_my_orders_shows_cancelled_and_rejected_orders(
+    client, logged_in_user, sample_item, app
+):
+    """
+    Cancelled and rejected orders should appear in My Orders history.
+    """
+    with app.app_context():
+        cancelled = Order(
+            buyer_id=logged_in_user.id,
+            item_id=sample_item.id,
+            location="loc",
+            status="cancelled",
+        )
+        rejected = Order(
+            buyer_id=logged_in_user.id,
+            item_id=sample_item.id,
+            location="loc",
+            status="rejected",
+        )
+        db.session.add_all([cancelled, rejected])
+        db.session.commit()
+
+    resp = client.get("/my_orders")
+
+    assert resp.status_code == 200
+    assert b"cancelled" in resp.data.lower()
+    assert b"rejected" in resp.data.lower()
+
+
 def test_confirm_order_authorized(client, logged_in_user, sample_item, app):
     with app.app_context():
         o = Order(
